@@ -39,13 +39,16 @@ String vratiPrimarniKljuc();
 ApstraktniDomenskiObjekat vratiObjekatIzRS(ResultSet rs) throws Exception;
 String vratiVrednostiZaIzmenu();
 ```
-
+xxxxx
 `extends Serializable` (mora ići preko mreže kroz `Zahtev`/`Odgovor`).
+----------------
 
 **Zašto svaka metoda postoji** (znaj ovo napamet za odbranu — pitanje "kako radi generički broker"):
 - `vratiNazivTabele()` → `DbRepositoryGeneric` gradi `SELECT * FROM <ovo>`.
 - `vratiListu(rs)` → uvek ista petlja (`while(rs.next()) lista.add(vratiObjekatIzRS(rs))`) — broker je
   generički jer ne zna tip, ali svaka klasa zna da napravi samu sebe iz reda.
+
+
 - `vratiKoloneZaUbacivanje()` / `vratiVrednostiZaUbacivanje()` → broker gradi `INSERT INTO tabela (...) VALUES (...)`.
 - `vratiPrimarniKljuc()` → broker gradi `WHERE ...` za `UPDATE`/`DELETE`.
 - `vratiObjekatIzRS(rs)` → mapira JEDAN red rezultata u objekat (mini-ORM po ruci).
@@ -53,10 +56,10 @@ String vratiVrednostiZaIzmenu();
 
 ### 1.1 Enumi (kucaj pre domenskih klasa jer ih koriste)
 
-- [ ] `domen/stepenStudija.java` → `enum stepenStudija { OAS, MAS, DAS }`
-- [ ] `domen/tipPodatka.java` → `enum tipPodatka { TEXT, NUMERIC, ALPHANUMERIC, DATE, BOOLEAN }`
-- [ ] `domen/tipTermina.java` → `enum tipTermina { PRVA_SMENA, DRUGA_SMENA, TRECA_SMENA }`
-- [ ] `domen/Status.java` → `enum Status { PODNET, U_OBRADI, VRACEN_NA_KOREKCIJU, ODOBREN, ODBIJEN }`
+- [ x] `domen/stepenStudija.java` → `enum stepenStudija { OAS, MAS, DAS }`
+- [x ] `domen/tipPodatka.java` → `enum tipPodatka { TEXT, NUMERIC, ALPHANUMERIC, DATE, BOOLEAN }`
+- [ x] `domen/tipTermina.java` → `enum tipTermina { PRVA_SMENA, DRUGA_SMENA, TRECA_SMENA }`
+- [ x] `domen/Status.java` → `enum Status { PODNET, U_OBRADI, VRACEN_NA_KOREKCIJU, ODOBREN, ODBIJEN }`
 
 (imena i vrednosti moraju se poklapati slovo-za-slovo sa `ENUM(...)` u `baza.sql`, inače JDBC baca
 grešku pri mapiranju)
