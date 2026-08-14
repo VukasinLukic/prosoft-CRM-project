@@ -1,0 +1,26 @@
+# Build output
+build/
+dist/
+*.class
+
+# NetBeans project - lokalni/mašinski specifični fajlovi
+nbproject/private/
+nbproject/Makefile-*.mk
+nbproject/Package-*.bash
+nb-configuration.xml
+
+# Env / secrets
+.env
+**/konfiguracija/dbconfig.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
