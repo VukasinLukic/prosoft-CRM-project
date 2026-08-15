@@ -74,7 +74,7 @@ generisanom ID-ju) → 7 metoda iz `ApstraktniDomenskiObjekat`. **Veze ka drugim
 ugnježden objekat** (npr. `Student` ima polje `StudijskiProgram studijskiProgram`, ne `int idStudProgram`)
 — to je isti obrazac po celom v1 kodu, prati ga.
 
-- [ ] **`domen/Student.java`** — v1 referenca pročitana i data kao primer ispod. Polja: `indeks:String,
+- [ x] **`domen/Student.java`** — v1 referenca pročitana i data kao primer ispod. Polja: `indeks:String,
       jmbg:String, ime:String, prezime:String, mestoRodjenja:String, adresaStanovanja:String,
       studijskiProgram:StudijskiProgram`.
   - `vratiNazivTabele()` → `"student"`
@@ -88,37 +88,37 @@ ugnježden objekat** (npr. `Student` ima polje `StudijskiProgram studijskiProgra
   - `vratiVrednostiZaIzmenu()` → `"jmbg = '...', ime = '...', ... , idStudProgram = " + studijskiProgram.getIdStudProgram()`
     (bez `indeks` — on je PK, ne update-uje se)
 
-- [ ] **`domen/StudijskiProgram.java`** — polja: `idStudProgram:int, naziv:String, oznaka:String,
+- [ x] **`domen/StudijskiProgram.java`** — polja: `idStudProgram:int, naziv:String, oznaka:String,
       stepenStudija:stepenStudija`. `vratiPrimarniKljuc()` je `"studijskiprogram.idStudProgram = " + idStudProgram`
       (broj, ne string). Enum se čita/piše preko `.name()` pri upisu i `stepenStudija.valueOf(rs.getString(...))`
       pri čitanju.
 
-- [ ] **`domen/ZaposleniFakulteta.java`** — polja: `idZaposlenog:int, ime:String, prezime:String,
+- [x ] **`domen/ZaposleniFakulteta.java`** — polja: `idZaposlenog:int, ime:String, prezime:String,
       korisnickoIme:String, email:String, sifra:String`. Isti obrazac kao StudijskiProgram (int PK,
       auto_increment → `vratiKoloneZaUbacivanje()` NE uključuje `idZaposlenog`).
 
-- [ ] **`domen/TerminDezurstva.java`** — polja: `idTerminDezurstva:int, tipTermina:tipTermina,
+- [x ] **`domen/TerminDezurstva.java`** — polja: `idTerminDezurstva:int, tipTermina:tipTermina,
       kancelarija:String`.
 
-- [ ] **`domen/TipPolja.java`** — polja: `idPolja:int, nazivPolja:String, tipPodatka:tipPodatka,
+- [x ] **`domen/TipPolja.java`** — polja: `idPolja:int, nazivPolja:String, tipPodatka:tipPodatka,
       regexValidacija:String, pozicijaX:Integer, pozicijaY:Integer, sirina:Integer, visina:Integer,
       stranica:int, redosledObrade:Integer, podrzavaOCR:boolean, obaveznoPolje:boolean`. Koristi
       `Integer` (ne `int`) za nullable pozicione atribute — inače ne možeš predstaviti "nema vrednosti"
       kad `podrzavaOCR=false`. Pazi u `vratiVrednostiZaUbacivanje()`/`vratiObjekatIzRS()` da hendluješ
       `null` (ne stavljaj `'null'` string u SQL, piši doslovno `NULL` bez navodnika kad je vrednost null).
 
-- [ ] **`domen/SV20Obrazac.java`** — polja: `idObrazac:int, datumUnosa:Date, skolskaGodina:int,
+- [ x] **`domen/SV20Obrazac.java`** — polja: `idObrazac:int, datumUnosa:Date, skolskaGodina:int,
       semestar:int, status:Status, putanjaFajla:String, ocrIzvrseno:boolean, brojUspesnihStavki:int,
       brojNeuspesnihStavki:int, zaposleniFakulteta:ZaposleniFakulteta, student:Student` (poslednja dva su
       ugnježdeni objekti, u bazi su `idZaposlenog`/`indeks`). `java.sql.Date` za `datumUnosa` (ne
       `java.util.Date` direktno u SQL stringu — moraš formatirati kao `'yyyy-MM-dd'`).
 
-- [ ] **`domen/StavkeObrasca.java`** — polja: `idObrazac:int, idStavke:int, ocrVrednost:String,
+- [x ] **`domen/StavkeObrasca.java`** — polja: `idObrazac:int, idStavke:int, ocrVrednost:String,
       korigovanaVrednost:String, nivoPodudarnosti:double, ocrUspesno:boolean, tipPolja:TipPolja`.
       **Kompozitni ključ** — `vratiPrimarniKljuc()` mora vratiti
       `"idObrazac = " + idObrazac + " AND idStavke = " + idStavke` (dve kolone, ne jedna kao kod ostalih).
 
-- [ ] **`domen/ZaposleniTermin.java`** — polja: `datum:Date, zaposleniFakulteta:ZaposleniFakulteta,
+- [x ] **`domen/ZaposleniTermin.java`** — polja: `datum:Date, zaposleniFakulteta:ZaposleniFakulteta,
       terminDezurstva:TerminDezurstva, brojSati:int, vanredan:boolean`. Takođe kompozitni ključ
       (`datum, idZaposlenog, idTerminDezurstva`).
 
