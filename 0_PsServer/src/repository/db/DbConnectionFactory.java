@@ -15,53 +15,41 @@ import konfiguracija.Konfiguracija;
 public class DbConnectionFactory {
 
     private static DbConnectionFactory instanca;
-    private Connection konekcija;
-    private String url;
-    private String username;
-    private String password;
+    private final String url;
+    private final String username;
+    private final String password;
 
-    public DbConnectionFactory() throws SQLException {
-        try {
-            url = konfiguracija.Konfiguracija.getInstanca().getProperty("db.url");
-            username = konfiguracija.Konfiguracija.getInstanca().getProperty("db.username");
-            password = konfiguracija.Konfiguracija.getInstanca().getProperty("db.password");
-            kreirajKonekciju();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Greska se desila u DbConnectionFactory");
+    // thread local sprecava race condition da jedna nit moze da zatvori konekcuju dok je druga koristi. jedna nit jedan korisnik
+    private final ThreadLocal<Connection> konekcija = new ThreadLocal<>();
 
-        }
-    }
-
-    private void kreirajKonekciju() throws SQLException {
-        konekcija = DriverManager.getConnection(url, username, password);
-        konekcija.setAutoCommit(false);
-
+    private DbConnectionFactory() throws IOException {
+        url = Konfiguracija.getInstanca().getProperty("db.url");
+        username = Konfiguracija.getInstanca().getProperty("db.username");
+        password = Konfiguracija.getInstanca().getProperty("db.password");
     }
 
     public static DbConnectionFactory getInstanca() {
         if (instanca == null) {
             try {
                 instanca = new DbConnectionFactory();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            } catch (IOException ex) {
+                System.getLogger(DbConnectionFactory.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
             }
-
         }
         return instanca;
-
     }
 
     public Connection getKonekcija() {
         try {
-            if (konekcija == null || konekcija.isClosed()) {
-                kreirajKonekciju();
+            Connection k = konekcija.get();
+            if (k == null || k.isClosed()) {
+                k = DriverManager.getConnection(url, username, password);
+                k.setAutoCommit(false);
+                konekcija.set(k);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            System.getLogger(DbConnectionFactory.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
-
-        return konekcija;
+        return konekcija.get();
     }
-
 }
