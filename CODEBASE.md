@@ -126,44 +126,46 @@ ugnježden objekat** (npr. `Student` ima polje `StudijskiProgram studijskiProgra
 
 ## FAZA 2 — ZAJEDNICKI / komunikacija (dan 3)
 
-- [ ] **`komunikacija/Operacija.java`** — enum sa svim signalima. Otvori dokumentaciju str. 20 (Tabela 5,
+- [x ] **`komunikacija/Operacija.java`** — enum sa svim signalima. Otvori dokumentaciju str. 20 (Tabela 5,
       48 signala) i v1 `ZAJEDNICKI/src/komunikacija/Operacija.java` uporedo — otkucaj enum vrednost za
       svaki signal koji stvarno koristiš (grupisano po konceptu, komentar pored svake sa brojem signala iz
       tabele, kao u v1). Ne dodaji `PRETRAZI_TIP_POLJA`/`PRETRAZI_STUDIJSKI_PROGRAM`/
       `PRETRAZI_TERMIN_DEZURSTVA` — dokumentacija za te šifarnike pretragu radi kroz `vratiListu*`, ne
       kroz poseban "pretraži jedan", pa su te tri mrtav kod u v1 (ne prepisuj grešku).
-- [ ] **`komunikacija/Zahtev.java`** — `Serializable`, polja `Operacija operacija`, `Object parametar`,
+
+
+- [ x] **`komunikacija/Zahtev.java`** — `Serializable`, polja `Operacija operacija`, `Object parametar`,
       konstruktor + getteri.
-- [ ] **`komunikacija/Odgovor.java`** — `Serializable`, polje `Object odgovor` + getter/setter.
-- [ ] **`komunikacija/Posiljac.java`** — omotava `ObjectOutputStream` nad socket-om, metoda
+- [ x] **`komunikacija/Odgovor.java`** — `Serializable`, polje `Object odgovor` + getter/setter.
+- [x ] **`komunikacija/Posiljac.java`** — omotava `ObjectOutputStream` nad socket-om, metoda
       `posalji(Object o)` → `oos.writeObject(o); oos.flush();`.
-- [ ] **`komunikacija/Primalac.java`** — omotava `ObjectInputStream`, metoda `primi()` → `ois.readObject()`.
+- [ x] **`komunikacija/Primalac.java`** — omotava `ObjectInputStream`, metoda `primi()` → `ois.readObject()`.
 
 ---
 
 ## FAZA 3 — SERVER infrastruktura (dan 4 — najvažniji dan, ne žuri)
 
-- [ ] **`konfiguracija/Konfiguracija.java`** — **razlikuje se od v1!** Singleton, `Properties`, ali
+- [ x] **`konfiguracija/Konfiguracija.java`** — **razlikuje se od v1!** Singleton, `Properties`, ali
       čitanje ide preko class-loadera, ne preko apsolutne putanje:
       `Konfiguracija.class.getResourceAsStream("dbconfig.properties")`. Stavi
       `dbconfig.properties` u isti paket/folder kao `.java` fajl (`SERVER/src/konfiguracija/`).
       Sadržaj fajla identičan v1: `db.url=jdbc:mysql://localhost:3306/bazaocr`, `db.username=root`,
       `db.password=`.
-- [ ] **`repository/Repository.java`** — generički interfejs `Repository<T>`:
+- [ x] **`repository/Repository.java`** — generički interfejs `Repository<T>`:
       `getAll(T param, String uslov)`, `add(T)`, `edit(T)`, `delete(T)`, `getAll()`.
-- [ ] **`repository/db/DbConnectionFactory.java`** — **razlikuje se od v1!** Ne drži jednu deljenu
+- [ x] **`repository/db/DbConnectionFactory.java`** — **razlikuje se od v1!** Ne drži jednu deljenu
       `Connection` kao polje. `getKonekcija()` svaki put pravi **novu** `DriverManager.getConnection(...)`
       i vraća je (`setAutoCommit(false)`). Nema `if (konekcija == null)` provere — nema šta da se keš-uje,
       svaki poziv = sveža konekcija. Ovo je popravka thread-safety problema iz plana (sekcija 2.2).
-- [ ] **`repository/db/DbRepository.java`** — interfejs `DbRepository<T> extends Repository<T>` sa
+- [ x] **`repository/db/DbRepository.java`** — interfejs `DbRepository<T> extends Repository<T>` sa
       `default` metodama `connect()/disconnect()/commit()/rollback()` koje deleguju na
       `DbConnectionFactory` (identično v1 — ovde nema promene, promena je unutar `DbConnectionFactory`).
-- [ ] **`repository/db/DbRepositoryGeneric.java`** — `implements DbRepository<ApstraktniDomenskiObjekat>`.
+- [ x] **`repository/db/DbRepositoryGeneric.java`** — `implements DbRepository<ApstraktniDomenskiObjekat>`.
       4 metode (`getAll(param,uslov)`, `add`, `edit`, `delete`) grade SQL string preko
       `ApstraktniDomenskiObjekat` metoda i izvršavaju ga (`Statement`, ne `PreparedStatement` — isto kao
       v1; ako ti ostane vremena, `PreparedStatement` je bezbednija verzija, ali nije deo obaveznih
       pravila iz beležaka pa nije prioritet).
-- [ ] **`operacije/ApstraktnaGenerickaOperacija.java`** — **srž ocene, kucaj polako i razumi svaki red.**
+- [x ] **`operacije/ApstraktnaGenerickaOperacija.java`** — **srž ocene, kucaj polako i razumi svaki red.**
       `protected final Repository<ApstraktniDomenskiObjekat> broker = new DbRepositoryGeneric();` (tip
       generičkog brokera preko interfejsa, ne konkretne klase — to je "programiraj prema interfejsu").
       `public final void izvrsi(Object objekat, String kljuc)` — **template method**, redosled:
