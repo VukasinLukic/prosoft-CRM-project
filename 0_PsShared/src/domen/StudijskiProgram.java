@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * @author Vukasin Lukic
  */
-class StudijskiProgram implements ApstraktniDomenskiObjekat {
+public class StudijskiProgram implements ApstraktniDomenskiObjekat {
 
     private int idStudProgram;
     private String naziv;
