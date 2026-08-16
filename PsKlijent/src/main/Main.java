@@ -11,6 +11,14 @@ package main;
 public class Main {
 
     public static void main(String[] args) {
+        //pozivanje teme za formu.
+        try {
+            com.formdev.flatlaf.FlatLightLaf.setup();
+        } catch (Exception ex) {
+            System.err.println("Greska: " + ex.getMessage());
+        }
+        
+        
         cordinator.Cordinator.getInstanca().otvoriLoginFormu();
     }
 }
