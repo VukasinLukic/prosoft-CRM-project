@@ -6,14 +6,21 @@ package main;
 
 import forme.ServerskaForma;
 
-/**
- *
- * @author Vukasin Lukic
- */
 public class Main {
 
     public static void main(String[] args) {
-        ServerskaForma sf = new ServerskaForma();
-        sf.setVisible(true);
+        try {
+            // Postavljanje  FlatLaf teme
+            com.formdev.flatlaf.FlatDarkLaf.setup();
+
+        } catch (Exception ex) {
+            System.err.println("Greska pri inicijalizaciji FlatLaf teme: " + ex.getMessage());
+        }
+
+        java.awt.EventQueue.invokeLater(() -> {
+            ServerskaForma sf = new ServerskaForma();
+            sf.setLocationRelativeTo(null);
+            sf.setVisible(true);
+        });
     }
 }

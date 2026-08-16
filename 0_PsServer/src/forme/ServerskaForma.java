@@ -61,7 +61,7 @@ public class ServerskaForma extends javax.swing.JFrame {
 
         jLabel1.setText("status:");
 
-        jMenu1.setText("Konfiguracija");
+        jMenu1.setText("Klikni ovde da namestis port i bazu.");
 
         menuBaza.setText("baza");
         menuBaza.addActionListener(this::menuBazaActionPerformed);

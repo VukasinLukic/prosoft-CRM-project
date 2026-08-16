@@ -177,7 +177,7 @@ ugnježden objekat** (npr. `Student` ima polje `StudijskiProgram studijskiProgra
 
 ## FAZA 4 — Login, registar prijavljenih, server, niti (dan 5)
 
-- [ ] **`operacije/LoginOperacija.java`** — `extends ApstraktnaGenerickaOperacija`. `preduslovi()`
+- [x ] **`operacije/LoginOperacija.java`** — `extends ApstraktnaGenerickaOperacija`. `preduslovi()`
       proverava da parametar nije null i da je `ZaposleniFakulteta`. `izvrsiOperaciju()`:
       1. `broker.getAll(new ZaposleniFakulteta(), null)`, nađi zaposlenog sa istim `korisnickoIme`+`sifra`
          (isti kod kao v1 `LoginOperacija`).
@@ -186,23 +186,23 @@ ugnježden objekat** (npr. `Student` ima polje `StudijskiProgram studijskiProgra
          ako nije, dodaj ga i vrati zaposlenog. Ova provera+dodavanje mora biti u **jednom**
          `synchronized` bloku (check-then-act mora biti atomsko, inače dve niti mogu proći proveru
          istovremeno).
-- [ ] **`controller/RegistarPrijavljenih.java`** (nova klasa, ne postoji u v1) — nosi statički
+- [ x] **`controller/RegistarPrijavljenih.java`** (nova klasa, ne postoji u v1) — nosi statički
       `private static final Set<String> ulogovani = Collections.synchronizedSet(new HashSet<>());` i
       metode `boolean prijavi(String korisnickoIme)` (vraća `false` ako je već prijavljen, inače doda i
       vrati `true` — sve unutar `synchronized(ulogovani)`), `void odjavi(String korisnickoIme)`,
       `Set<String> vratiSve()`. `LoginOperacija` zove `prijavi()`.
-- [ ] **`operacije/OdjaviZaposlenogOperacija.java`** (novo) — `izvrsiOperaciju()` zove
+- [ x] **`operacije/OdjaviZaposlenogOperacija.java`** (novo) — `izvrsiOperaciju()` zove
       `RegistarPrijavljenih.odjavi(korisnickoIme)`. Nema `broker` poziva (ne dira bazu), ali i dalje
       nasleđuje `ApstraktnaGenerickaOperacija` radi doslednosti (transakcija se jednostavno ne koristi).
-- [ ] Dodaj `ODJAVI_ZAPOSLENOG` u `Operacija` enum (vrati se korak unazad u FAZI 2 i dopuni ga — u redu
+- [x ] Dodaj `ODJAVI_ZAPOSLENOG` u `Operacija` enum (vrati se korak unazad u FAZI 2 i dopuni ga — u redu
       je, enum se ovde prvi put stvarno koristi za novu operaciju).
-- [ ] **`controller/Controller.java`** — Singleton (`getInstanca()`), za sada samo `login()`/`odjava()`
+- [ x] **`controller/Controller.java`** — Singleton (`getInstanca()`), za sada samo `login()`/`odjava()`
       metode koje prave `LoginOperacija`/`OdjaviZaposlenogOperacija` i zovu `izvrsi()`. Ostale metode
       (po jedna za svaki koncept) dodaješ postepeno kako pišeš operacije u Fazi 5 — ne piši ih sve odjednom
       sada.
-- [ ] **`server/Server.java`** — `ServerSocket(9000)`, `while(true) { Socket s = server.accept();
+- [ x] **`server/Server.java`** — `ServerSocket(9000)`, `while(true) { Socket s = server.accept();
       new ObradaKlijentskihZahteva(s).start(); }` — jedna nit po klijentu (pravilo 5 iz beležaka).
-- [ ] **`niti/ObradaKlijentskihZahteva.java`** — `extends Thread`. `run()`: petlja `primi()` →
+- [ x] **`niti/ObradaKlijentskihZahteva.java`** — `extends Thread`. `run()`: petlja `primi()` →
       `switch(zahtev.getOperacija())` → pozovi odgovarajuću `Controller` metodu → upakuj u `Odgovor` →
       `posalji()`. Za sada samo `case PRIJAVI_ZAPOSLENOG` i `case ODJAVI_ZAPOSLENOG` (ostale grane
       dodaješ kako pišeš operacije). **Bitno, razlika od v1:** u `catch` grani (kad se socket
@@ -428,3 +428,36 @@ GlavnaForma → GlavnaFormaController → *(za svaki koncept istim redosledom ka
 → Main
 
 Ukupno ≈ 95 fajlova. Kad završiš, ovaj fajl treba da ima sve kućice štiklirane.
+
+
+Korak 3: Izgradnja Klijentskog modula (PsKlijent)
+
+
+Infrastruktura: Kopiraj iz v1AplikacijeGotov/KLIJENT/src/:
+komunikacija/Komunikacija.java
+cordinator/Cordinator.java
+main/Main.java
+
+
+
+Osnovne forme i kontroleri: Kopiraj:
+
+
+
+forme/LoginForma.java + kontroleri/LoginController.java
+forme/GlavnaForma.java + kontroleri/GlavnaFormaController.java
+Šifarničke forme i kontroleri: Kopiraj:
+forme/StudijskiProgramForma.java + kontroleri/StudijskiProgramController.java
+forme/TerminDezurstvaForma.java + kontroleri/TerminDezurstvaController.java
+forme/TipPoljaForma.java + kontroleri/TipPoljaController.java
+
+
+
+Glavne domenske forme i kontroleri: Kopiraj i dopuni:
+
+
+
+forme/StudentForma.java + kontroleri/StudentController.java
+forme/ZaposleniForma.java + kontroleri/ZaposleniController.java
+forme/SV20ObrazacForma.java + kontroleri/SV20ObrazacController.java
+forme/StavkeObrascaForma.java + kontroleri/StavkeObrascaController.java
