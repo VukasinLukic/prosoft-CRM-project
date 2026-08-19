@@ -70,6 +70,9 @@ public class StudijskiProgram implements ApstraktniDomenskiObjekat {
     @Override
     public int hashCode() {
         int hash = 7;
+        hash = 31 * hash + Objects.hashCode(this.naziv);
+        hash = 31 * hash + Objects.hashCode(this.oznaka);
+        hash = 31 * hash + Objects.hashCode(this.stepenStudija);
         return hash;
     }
 

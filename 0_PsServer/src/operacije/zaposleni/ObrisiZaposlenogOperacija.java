@@ -5,6 +5,7 @@
 package operacije.zaposleni;
 
 import domen.ZaposleniFakulteta;
+import java.sql.SQLException;
 import operacije.ApstraktnaGenerickaOperacija;
 
 /**
@@ -26,7 +27,11 @@ public class ObrisiZaposlenogOperacija extends ApstraktnaGenerickaOperacija{
 
    @Override
     protected void izvrsiOperaciju(Object objekat, String kljuc) throws Exception {
-        broker.delete((ZaposleniFakulteta) objekat);
+        try {
+            broker.delete((ZaposleniFakulteta) objekat);
+        } catch (SQLException ex) {
+            throw new Exception("Zaposleni se ne moze obrisati jer ima povezane obrasce ili termine dezurstva.");
+        }
     }
     
 }

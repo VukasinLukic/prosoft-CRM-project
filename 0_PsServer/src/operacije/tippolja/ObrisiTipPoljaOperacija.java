@@ -5,6 +5,7 @@
 package operacije.tippolja;
 
 import domen.TipPolja;
+import java.sql.SQLException;
 import operacije.ApstraktnaGenerickaOperacija;
 
 /**
@@ -26,6 +27,10 @@ public class ObrisiTipPoljaOperacija extends ApstraktnaGenerickaOperacija {
 
     @Override
     protected void izvrsiOperaciju(Object objekat, String kljuc) throws Exception {
-        broker.delete((TipPolja) objekat);
+        try {
+            broker.delete((TipPolja) objekat);
+        } catch (SQLException ex) {
+            throw new Exception("Tip polja se ne moze obrisati jer postoje stavke obrasca koje ga koriste.");
+        }
     }
 }

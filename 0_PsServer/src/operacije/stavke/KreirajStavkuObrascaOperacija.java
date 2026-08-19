@@ -4,7 +4,9 @@
  */
 package operacije.stavke;
 
+import domen.ApstraktniDomenskiObjekat;
 import domen.StavkeObrasca;
+import java.util.List;
 import operacije.ApstraktnaGenerickaOperacija;
 
 /**
@@ -29,6 +31,21 @@ public class KreirajStavkuObrascaOperacija extends ApstraktnaGenerickaOperacija 
 
     @Override
     protected void izvrsiOperaciju(Object objekat, String kljuc) throws Exception {
-        broker.add((StavkeObrasca) objekat);
+        StavkeObrasca s = (StavkeObrasca) objekat;
+
+        // idStavke se numerise po obrascu (idObrazac, idStavke) je slozen primarni kljuc,
+        // idStavke NIJE auto_increment u bazi, pa se sledeca vrednost racuna rucno.
+        String uslov = " WHERE idObrazac = " + s.getIdObrazac().getIdObrazac();
+        List<ApstraktniDomenskiObjekat> postojece = broker.getAll(new StavkeObrasca(), uslov);
+        int sledeciIdStavke = 1;
+        for (ApstraktniDomenskiObjekat ado : postojece) {
+            int idStavke = ((StavkeObrasca) ado).getIdStavke();
+            if (idStavke >= sledeciIdStavke) {
+                sledeciIdStavke = idStavke + 1;
+            }
+        }
+        s.setIdStavke(sledeciIdStavke);
+
+        broker.add(s);
     }
 }

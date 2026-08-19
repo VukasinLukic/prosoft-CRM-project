@@ -5,6 +5,7 @@
 package operacije;
 
 import controller.RegistarPrijavljenih;
+import domen.ApstraktniDomenskiObjekat;
 import domen.ZaposleniFakulteta;
 import java.util.List;
 
@@ -32,12 +33,13 @@ public class LoginOperacija extends ApstraktnaGenerickaOperacija {
 
     @Override
     protected void izvrsiOperaciju(Object objekat, String kljuc) throws Exception {
-        List<ZaposleniFakulteta> sviZaposleni = broker.getAll((ZaposleniFakulteta) objekat, null);
+        List<ApstraktniDomenskiObjekat> sviZaposleni = broker.getAll((ZaposleniFakulteta) objekat, null);
         System.out.println("KLASA login operacija SO " + sviZaposleni);
 
         ZaposleniFakulteta zf = (ZaposleniFakulteta) objekat;
 
-        for (ZaposleniFakulteta z : sviZaposleni) {
+        for (ApstraktniDomenskiObjekat ado : sviZaposleni) {
+            ZaposleniFakulteta z = (ZaposleniFakulteta) ado;
             if (z.getKorisnickoIme().equals(zf.getKorisnickoIme()) && z.getSifra().equals(zf.getSifra())) {
                 if (!RegistarPrijavljenih.prijavi(z.getKorisnickoIme())) {
                     throw new Exception("Korisnik je već prijavljen na sistem!");

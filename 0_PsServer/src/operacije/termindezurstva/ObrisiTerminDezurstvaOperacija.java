@@ -5,6 +5,7 @@
 package operacije.termindezurstva;
 
 import domen.TerminDezurstva;
+import java.sql.SQLException;
 import operacije.ApstraktnaGenerickaOperacija;
 
 /**
@@ -26,6 +27,10 @@ public class ObrisiTerminDezurstvaOperacija extends ApstraktnaGenerickaOperacija
 
     @Override
     protected void izvrsiOperaciju(Object objekat, String kljuc) throws Exception {
-        broker.delete((TerminDezurstva) objekat);
+        try {
+            broker.delete((TerminDezurstva) objekat);
+        } catch (SQLException ex) {
+            throw new Exception("Termin dezurstva se ne moze obrisati jer je vec dodeljen zaposlenima.");
+        }
     }
 }

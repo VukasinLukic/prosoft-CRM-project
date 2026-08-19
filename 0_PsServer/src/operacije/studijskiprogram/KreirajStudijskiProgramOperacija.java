@@ -28,6 +28,9 @@ public class KreirajStudijskiProgramOperacija extends ApstraktnaGenerickaOperaci
         if (sp.getOznaka().length() > 10) {
             throw new Exception("Oznaka ne sme biti duza od 10 karaktera!");
         }
+        if (sp.getOznaka().length() > sp.getNaziv().length() / 2) {
+            throw new Exception("Oznaka ne sme biti duza od polovine duzine naziva!");
+        }
         if (sp.getStepenStudija() == null) {
             throw new Exception("Stepen studija je obavezan!");
         }
