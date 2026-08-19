@@ -94,7 +94,7 @@ public class StudijskiProgramController {
         try {
             String naziv = forma.getTxtNaziv().getText().trim();
             String oznaka = forma.getTxtOznaka().getText().trim();
-            stepenStudija stepen = (stepenStudija) forma.getCmbStepen().getSelectedItem();
+            stepenStudija stepen = (stepenStudija) forma.getCmbStepenStudija().getSelectedItem();
 
             if (naziv.isEmpty() || oznaka.isEmpty()) {
                 JOptionPane.showMessageDialog(forma, "Naziv i oznaka su obavezni!",
@@ -131,7 +131,7 @@ public class StudijskiProgramController {
 
             String naziv = forma.getTxtNaziv().getText().trim();
             String oznaka = forma.getTxtOznaka().getText().trim();
-            stepenStudija stepen = (stepenStudija) forma.getCmbStepen().getSelectedItem();
+            stepenStudija stepen = (stepenStudija) forma.getCmbStepenStudija().getSelectedItem();
 
             if (naziv.isEmpty() || oznaka.isEmpty()) {
                 JOptionPane.showMessageDialog(forma, "Naziv i oznaka su obavezni!",
@@ -189,13 +189,13 @@ public class StudijskiProgramController {
     private void ocisti() {
         forma.getTxtNaziv().setText("");
         forma.getTxtOznaka().setText("");
-        forma.getCmbStepen().setSelectedIndex(0);
+        forma.getCmbStepenStudija().setSelectedIndex(0);
         forma.setSelektovani(null);
-        forma.getTblStudijskiProgrami().clearSelection();
+        forma.getTblProgrami().clearSelection();
     }
 
     private void popuniFormu() {
-        int red = forma.getTblStudijskiProgrami().getSelectedRow();
+        int red = forma.getTblProgrami().getSelectedRow();
         if (red >= 0) {
             int id = (int) forma.getTableModel().getValueAt(red, 0);
             String naziv = (String) forma.getTableModel().getValueAt(red, 1);
@@ -204,7 +204,7 @@ public class StudijskiProgramController {
 
             forma.getTxtNaziv().setText(naziv);
             forma.getTxtOznaka().setText(oznaka);
-            forma.getCmbStepen().setSelectedItem(stepen);
+            forma.getCmbStepenStudija().setSelectedItem(stepen);
 
             StudijskiProgram sp = new StudijskiProgram();
             sp.setIdStudProgram(id);

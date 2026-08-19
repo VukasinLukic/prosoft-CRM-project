@@ -85,14 +85,7 @@ public class SV20ObrazacController {
             }
         });
 
-        forma.addUrediStavkeListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                urediStavke();
-            }
-        });
-
-        forma.addTabelaSelectionListener(new ListSelectionListener() {
+        forma.addTabelaObrasciSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
@@ -218,7 +211,7 @@ public class SV20ObrazacController {
     }
     private void sacuvaj() {
         try {
-            if (forma.getSelektovani() == null) {
+            if (forma.getSelektovaniObrazac() == null) {
                 JOptionPane.showMessageDialog(forma, "Izaberite obrazac iz tabele!",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
                 return;
@@ -235,7 +228,7 @@ public class SV20ObrazacController {
                 return;
             }
 
-            SV20Obrazac o = forma.getSelektovani();
+            SV20Obrazac o = forma.getSelektovaniObrazac();
             o.setSkolskaGodina(skolskaGodina);
             o.setSemestar(semestar);
             o.setStatus(status);
@@ -259,7 +252,7 @@ public class SV20ObrazacController {
 
     private void obrisi() {
         try {
-            if (forma.getSelektovani() == null) {
+            if (forma.getSelektovaniObrazac() == null) {
                 JOptionPane.showMessageDialog(forma, "Izaberite obrazac iz tabele!",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
                 return;
@@ -270,7 +263,7 @@ public class SV20ObrazacController {
                 "Potvrda brisanja", JOptionPane.YES_NO_OPTION);
 
             if (opcija == JOptionPane.YES_OPTION) {
-                Komunikacija.getInstanca().obrisiSV20Obrazac(forma.getSelektovani());
+                Komunikacija.getInstanca().obrisiSV20Obrazac(forma.getSelektovaniObrazac());
 
                 JOptionPane.showMessageDialog(forma, "Sistem je obrisao SV-20 obrazac.",
                     "Uspeh", JOptionPane.INFORMATION_MESSAGE);
@@ -344,16 +337,16 @@ public class SV20ObrazacController {
     }
 
     private void urediStavke() {
-        if (forma.getSelektovani() == null) {
+        if (forma.getSelektovaniObrazac() == null) {
             JOptionPane.showMessageDialog(forma, "Izaberite obrazac iz tabele!",
                 "Upozorenje", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        StavkeObrascaForma stavkeForma = new StavkeObrascaForma(forma, forma.getSelektovani());
-        new StavkeObrascaController(stavkeForma);
+        StavkeObrascaForma stavkeForma = new StavkeObrascaForma((java.awt.Frame) forma.getParent());
+        new StavkeObrascaController(stavkeForma, forma.getSelektovaniObrazac());
         stavkeForma.setVisible(true);
-        ucitajStavke(forma.getSelektovani().getIdObrazac());
+        ucitajStavke(forma.getSelektovaniObrazac().getIdObrazac());
     }
 
     private void ocisti() {
@@ -367,7 +360,7 @@ public class SV20ObrazacController {
         forma.getSpnSemestar().setValue(1);
         forma.getCmbStatus().setSelectedIndex(0);
         forma.getTxtPutanjaFajla().setText("");
-        forma.setSelektovani(null);
+        forma.setSelektovaniObrazac(null);
         forma.getTblObrasci().clearSelection();
         forma.getTableModelStavke().setRowCount(0);
     }
@@ -402,7 +395,7 @@ public class SV20ObrazacController {
             o.setIndeks(s);
             ZaposleniFakulteta z = (ZaposleniFakulteta) forma.getCmbZaposleni().getSelectedItem();
             o.setIdZaposlenog(z);
-            forma.setSelektovani(o);
+            forma.setSelektovaniObrazac(o);
 
             ucitajStavke(id);
         }

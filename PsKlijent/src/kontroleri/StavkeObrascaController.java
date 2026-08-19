@@ -14,7 +14,9 @@ import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableModel;
 import komunikacija.Komunikacija;
+import domen.SV20Obrazac;
 
 /**
  *
@@ -23,9 +25,11 @@ import komunikacija.Komunikacija;
 public class StavkeObrascaController {
 
     private final StavkeObrascaForma forma;
+    private final SV20Obrazac obrazac;
 
-    public StavkeObrascaController(StavkeObrascaForma forma) {
+    public StavkeObrascaController(StavkeObrascaForma forma, SV20Obrazac obrazac) {
         this.forma = forma;
+        this.obrazac = obrazac;
         addActionListeners();
         ucitajTipovePolja();
         ucitajPodatke();
@@ -54,13 +58,6 @@ public class StavkeObrascaController {
             }
         });
 
-        forma.addZatvoriListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                forma.dispose();
-            }
-        });
-
         forma.addTabelaSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -74,9 +71,9 @@ public class StavkeObrascaController {
     private void ucitajTipovePolja() {
         try {
             List<TipPolja> lista = Komunikacija.getInstanca().vratiSveTipovePolja();
-            forma.getCmbTipPolja().removeAllItems();
+            forma.getCmbPolje().removeAllItems();
             for (TipPolja tp : lista) {
-                forma.getCmbTipPolja().addItem(tp);
+                forma.getCmbPolje().addItem(tp);
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(forma, "Greska pri ucitavanju tipova polja: " + ex.getMessage(),
@@ -87,7 +84,7 @@ public class StavkeObrascaController {
     private void ucitajPodatke() {
         try {
             StavkeObrasca kriterijum = new StavkeObrasca();
-            kriterijum.setIdObrazac(forma.getObrazac());
+            kriterijum.setIdObrazac(this.obrazac);
 
             List<StavkeObrasca> lista = Komunikacija.getInstanca().pretraziStavkeObrasca(kriterijum);
             DefaultTableModel model = forma.getTableModel();
@@ -110,10 +107,13 @@ public class StavkeObrascaController {
 
     private void dodaj() {
         try {
-            TipPolja tipPolja = (TipPolja) forma.getCmbTipPolja().getSelectedItem();
+            TipPolja tipPolja = (TipPolja) forma.getCmbPolje().getSelectedItem();
             String ocrVrednost = forma.getTxtOcrVrednost().getText().trim();
             String korigovanaVrednost = forma.getTxtKorigovanaVrednost().getText().trim();
-            double nivoPodudarnosti = (double) forma.getSpnNivoPodudarnosti().getValue();
+            double nivoPodudarnosti = 0.0;
+            try {
+                nivoPodudarnosti = Double.parseDouble(forma.getTxtNivoPodudarnosti().getText().trim().replace(",", "."));
+            } catch (NumberFormatException ex) {}
             boolean ocrUspesno = forma.getChkOcrUspesno().isSelected();
 
             if (!validirajPodatke(tipPolja, ocrVrednost, nivoPodudarnosti, ocrUspesno)) {
@@ -121,7 +121,7 @@ public class StavkeObrascaController {
             }
 
             StavkeObrasca s = new StavkeObrasca();
-            s.setIdObrazac(forma.getObrazac());
+            s.setIdObrazac(this.obrazac);
             s.setOcrVrednost(ocrVrednost.isEmpty() ? null : ocrVrednost);
             s.setKorigovanaVrednost(korigovanaVrednost.isEmpty() ? null : korigovanaVrednost);
             s.setNivoPodudarnosti(nivoPodudarnosti);
@@ -144,23 +144,26 @@ public class StavkeObrascaController {
 
     private void sacuvaj() {
         try {
-            if (forma.getSelektovana() == null) {
+            if (forma.getSelektovani() == null) {
                 JOptionPane.showMessageDialog(forma, "Izaberite stavku iz tabele!",
                         "Upozorenje", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            TipPolja tipPolja = (TipPolja) forma.getCmbTipPolja().getSelectedItem();
+            TipPolja tipPolja = (TipPolja) forma.getCmbPolje().getSelectedItem();
             String ocrVrednost = forma.getTxtOcrVrednost().getText().trim();
             String korigovanaVrednost = forma.getTxtKorigovanaVrednost().getText().trim();
-            double nivoPodudarnosti = (double) forma.getSpnNivoPodudarnosti().getValue();
+            double nivoPodudarnosti = 0.0;
+            try {
+                nivoPodudarnosti = Double.parseDouble(forma.getTxtNivoPodudarnosti().getText().trim().replace(",", "."));
+            } catch (NumberFormatException ex) {}
             boolean ocrUspesno = forma.getChkOcrUspesno().isSelected();
 
             if (!validirajPodatke(tipPolja, ocrVrednost, nivoPodudarnosti, ocrUspesno)) {
                 return;
             }
 
-            StavkeObrasca s = forma.getSelektovana();
+            StavkeObrasca s = forma.getSelektovani();
             s.setOcrVrednost(ocrVrednost.isEmpty() ? null : ocrVrednost);
             s.setKorigovanaVrednost(korigovanaVrednost.isEmpty() ? null : korigovanaVrednost);
             s.setNivoPodudarnosti(nivoPodudarnosti);
@@ -182,14 +185,14 @@ public class StavkeObrascaController {
     }
 
     private void ocisti() {
-        if (forma.getCmbTipPolja().getItemCount() > 0) {
-            forma.getCmbTipPolja().setSelectedIndex(0);
+        if (forma.getCmbPolje().getItemCount() > 0) {
+            forma.getCmbPolje().setSelectedIndex(0);
         }
         forma.getTxtOcrVrednost().setText("");
         forma.getTxtKorigovanaVrednost().setText("");
-        forma.getSpnNivoPodudarnosti().setValue(0.0);
+        forma.getTxtNivoPodudarnosti().setText("0.0");
         forma.getChkOcrUspesno().setSelected(false);
-        forma.setSelektovana(null);
+        forma.setSelektovani(null);
         forma.getTblStavke().clearSelection();
     }
 
@@ -208,26 +211,26 @@ public class StavkeObrascaController {
 
             forma.getTxtOcrVrednost().setText(ocrVrednost != null ? ocrVrednost : "");
             forma.getTxtKorigovanaVrednost().setText(korigovanaVrednost != null ? korigovanaVrednost : "");
-            forma.getSpnNivoPodudarnosti().setValue(podudarnost);
+            forma.getTxtNivoPodudarnosti().setText(String.valueOf(podudarnost));
             forma.getChkOcrUspesno().setSelected(ocrUspesno);
 
-            for (int i = 0; i < forma.getCmbTipPolja().getItemCount(); i++) {
-                TipPolja tp = forma.getCmbTipPolja().getItemAt(i);
+            for (int i = 0; i < forma.getCmbPolje().getItemCount(); i++) {
+                TipPolja tp = forma.getCmbPolje().getItemAt(i);
                 if (tp.getNazivPolja() != null && tp.getNazivPolja().equals(tipPoljaNaziv)) {
-                    forma.getCmbTipPolja().setSelectedIndex(i);
+                    forma.getCmbPolje().setSelectedIndex(i);
                     break;
                 }
             }
 
             StavkeObrasca s = new StavkeObrasca();
             s.setIdStavke(idStavke);
-            s.setIdObrazac(forma.getObrazac());
+            s.setIdObrazac(this.obrazac);
             s.setOcrVrednost(ocrVrednost);
             s.setKorigovanaVrednost(korigovanaVrednost);
             s.setNivoPodudarnosti(podudarnost);
             s.setOcrUspesno(ocrUspesno);
-            s.setIdPolja((TipPolja) forma.getCmbTipPolja().getSelectedItem());
-            forma.setSelektovana(s);
+            s.setIdPolja((TipPolja) forma.getCmbPolje().getSelectedItem());
+            forma.setSelektovani(s);
         }
     }
 

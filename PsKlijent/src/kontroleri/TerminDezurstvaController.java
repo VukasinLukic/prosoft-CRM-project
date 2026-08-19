@@ -32,7 +32,7 @@ public class TerminDezurstvaController {
 
     private void addActionListeners() {
 
-        forma.addUbaciListener(new ActionListener() {
+        forma.addDodajListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ubaci();

@@ -8,7 +8,7 @@ package forme;
  *
  * @author Vukasin Lukic
  */
-public class StudijskiProgramForma extends javax.swing.JFrame {
+public class StudijskiProgramForma extends javax.swing.JDialog{
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(StudijskiProgramForma.class.getName());
 
@@ -30,7 +30,7 @@ public class StudijskiProgramForma extends javax.swing.JFrame {
 
         txtNaziv = new javax.swing.JTextField();
         txtOznaka = new javax.swing.JTextField();
-        cmbStepenStudija = new javax.swing.JComboBox<>();
+        cmbStepenStudija = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblProgrami = new javax.swing.JTable();
         btnSacuvaj = new javax.swing.JButton();
@@ -44,7 +44,8 @@ public class StudijskiProgramForma extends javax.swing.JFrame {
 
         txtOznaka.setText("txtOznaka");
 
-        cmbStepenStudija.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbStepenStudija.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbStepenStudija.addActionListener(this::cmbStepenStudijaActionPerformed);
 
         tblProgrami.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -122,6 +123,10 @@ public class StudijskiProgramForma extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cmbStepenStudijaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbStepenStudijaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbStepenStudijaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -221,7 +226,7 @@ public class StudijskiProgramForma extends javax.swing.JFrame {
     private javax.swing.JButton btnObrisi;
     private javax.swing.JButton btnOcisti;
     private javax.swing.JButton btnSacuvaj;
-    private javax.swing.JComboBox<String> cmbStepenStudija;
+    private javax.swing.JComboBox cmbStepenStudija;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tblProgrami;
     private javax.swing.JTextField txtNaziv;

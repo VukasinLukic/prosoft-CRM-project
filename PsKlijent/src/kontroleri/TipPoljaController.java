@@ -168,13 +168,19 @@ public class TipPoljaController {
     private TipPolja prikupiPodatke() {
         String naziv = forma.getTxtNazivPolja().getText().trim();
         tipPodatka tip = (tipPodatka) forma.getCmbTipPodatka().getSelectedItem();
-        String regex = forma.getTxtRegex().getText().trim();
-        int pozX = (int) forma.getSpnPozicijaX().getValue();
-        int pozY = (int) forma.getSpnPozicijaY().getValue();
-        int sirina = (int) forma.getSpnSirina().getValue();
-        int visina = (int) forma.getSpnVisina().getValue();
+        String regex = forma.getTxtRegexValidacija().getText().trim();
+        int pozX = 0;
+        int pozY = 0;
+        int sirina = 0;
+        int visina = 0;
+        try {
+            pozX = Integer.parseInt(forma.getTxtPozicijaX().getText().trim());
+            pozY = Integer.parseInt(forma.getTxtPozicijaY().getText().trim());
+            sirina = Integer.parseInt(forma.getTxtSirina().getText().trim());
+            visina = Integer.parseInt(forma.getTxtVisina().getText().trim());
+        } catch (NumberFormatException ex) {}
         int stranica = (int) forma.getSpnStranica().getValue();
-        int redosled = (int) forma.getSpnRedosled().getValue();
+        int redosled = (int) forma.getSpnRedosledObrade().getValue();
         boolean podrzavaOCR = forma.getChkPodrzavaOCR().isSelected();
         boolean obavezno = forma.getChkObaveznoPolje().isSelected();
         
@@ -203,21 +209,21 @@ public class TipPoljaController {
     private void ocisti() {
         forma.getTxtNazivPolja().setText("");
         forma.getCmbTipPodatka().setSelectedIndex(0);
-        forma.getTxtRegex().setText("");
-        forma.getSpnPozicijaX().setValue(0);
-        forma.getSpnPozicijaY().setValue(0);
-        forma.getSpnSirina().setValue(0);
-        forma.getSpnVisina().setValue(0);
+        forma.getTxtRegexValidacija().setText("");
+        forma.getTxtPozicijaX().setText("0");
+        forma.getTxtPozicijaY().setText("0");
+        forma.getTxtSirina().setText("0");
+        forma.getTxtVisina().setText("0");
         forma.getSpnStranica().setValue(1);
-        forma.getSpnRedosled().setValue(0);
+        forma.getSpnRedosledObrade().setValue(0);
         forma.getChkPodrzavaOCR().setSelected(true);
         forma.getChkObaveznoPolje().setSelected(false);
         forma.setSelektovani(null);
-        forma.getTblTipPolja().clearSelection();
+        forma.getTblTipoviPolja().clearSelection();
     }
     
     private void popuniFormu() {
-        int red = forma.getTblTipPolja().getSelectedRow();
+        int red = forma.getTblTipoviPolja().getSelectedRow();
         if (red >= 0) {
             try {
                 int id = (int) forma.getTableModel().getValueAt(red, 0);
