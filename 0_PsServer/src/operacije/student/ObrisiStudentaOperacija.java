@@ -5,6 +5,7 @@
 package operacije.student;
 
 import domen.Student;
+import java.sql.SQLException;
 import operacije.ApstraktnaGenerickaOperacija;
 
 /**
@@ -22,6 +23,10 @@ public class ObrisiStudentaOperacija extends ApstraktnaGenerickaOperacija {
 
     @Override
     protected void izvrsiOperaciju(Object objekat, String kljuc) throws Exception {
-        broker.delete((Student) objekat);
+        try {
+            broker.delete((Student) objekat);
+        } catch (SQLException ex) {
+            throw new Exception("Student se ne moze obrisati jer ima povezane SV-20 obrasce.");
+        }
     }
 }

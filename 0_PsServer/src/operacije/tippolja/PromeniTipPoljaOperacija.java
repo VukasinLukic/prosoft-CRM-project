@@ -22,6 +22,25 @@ public class PromeniTipPoljaOperacija extends ApstraktnaGenerickaOperacija {
         if (tp.getIdPolja() <= 0) {
             throw new Exception("ID tipa polja nije validan!");
         }
+        if (tp.getNazivPolja() == null || tp.getNazivPolja().isEmpty()) {
+            throw new Exception("Naziv polja je obavezan!");
+        }
+        if (tp.getTipPodatka() == null) {
+            throw new Exception("Tip podatka je obavezan!");
+        }
+        if (tp.getStranica() < 1) {
+            throw new Exception("Stranica mora biti >= 1!");
+        }
+        if (tp.isPodrzavaOCR()) {
+            if (tp.getSirina() <= 0 || tp.getVisina() <= 0) {
+                throw new Exception("Ako polje podrzava OCR, sirina i visina moraju biti pozitivne vrednosti!");
+            }
+        }
+        if (tp.getTipPodatka() == domen.tipPodatka.NUMERIC) {
+            if (tp.getRegexValidacija() == null || !tp.getRegexValidacija().matches("^[0-9]+$")) {
+                throw new Exception("Za NUMERIC tip podatka, regex validacija mora sadrzati samo cifre!");
+            }
+        }
     }
 
     @Override

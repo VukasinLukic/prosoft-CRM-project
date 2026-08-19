@@ -5,6 +5,7 @@
 package operacije.zaposlenitermin;
 
 import domen.ZaposleniTermin;
+import java.sql.SQLException;
 import operacije.ApstraktnaGenerickaOperacija;
 
 /**
@@ -26,6 +27,10 @@ public class ObrisiZaposleniTerminOperacija extends ApstraktnaGenerickaOperacija
 
     @Override
     protected void izvrsiOperaciju(Object objekat, String kljuc) throws Exception {
-        broker.delete((ZaposleniTermin) objekat);
+        try {
+            broker.delete((ZaposleniTermin) objekat);
+        } catch (SQLException ex) {
+            throw new Exception("Dodela termina se ne moze obrisati zbog povezanih podataka.");
+        }
     }
 }

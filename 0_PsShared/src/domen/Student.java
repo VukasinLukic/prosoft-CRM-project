@@ -99,8 +99,7 @@ public class Student implements ApstraktniDomenskiObjekat {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        return hash;
+        return Objects.hashCode(this.jmbg);
     }
 
     @Override
@@ -139,7 +138,7 @@ public class Student implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        return "'" + indeks + "', '" + jmbg + "', '" + ime + "', '" + prezime + "', '" + mestoRodjenja + "', '" + "', '" + adresaStanovanja + "', " + studijskiProgram.getIdStudProgram();
+        return "'" + indeks + "', '" + jmbg + "', '" + ime + "', '" + prezime + "', '" + mestoRodjenja + "', '" + adresaStanovanja + "', " + studijskiProgram.getIdStudProgram();
     }
 
     @Override

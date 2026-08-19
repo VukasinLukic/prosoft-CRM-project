@@ -113,7 +113,7 @@ public class ZaposleniTermin implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiNazivTabele() {
-        return "ZaposleniTermin";
+        return "zaposleni_termin";
     }
 
     @Override
@@ -141,9 +141,9 @@ public class ZaposleniTermin implements ApstraktniDomenskiObjekat {
     @Override
     public String vratiPrimarniKljuc() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return "zaposleniTermin.idZaposlenog = " + idZaposlenog.getIdZaposlenog()
-                + " AND zaposleniTermin.idTerminDezurstva = " + idTerminDezurstva.getIdTerminDezurstva()
-                + " AND zaposleniTermin.datum = '" + sdf.format(datum) + "'";
+        return "zaposleni_termin.idZaposlenog = " + idZaposlenog.getIdZaposlenog()
+                + " AND zaposleni_termin.idTerminDezurstva = " + idTerminDezurstva.getIdTerminDezurstva()
+                + " AND zaposleni_termin.datum = '" + sdf.format(datum) + "'";
     }
 
     @Override

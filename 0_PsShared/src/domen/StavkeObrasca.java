@@ -112,12 +112,12 @@ public class StavkeObrasca implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiKoloneZaUbacivanje() {
-        return "idObrazac, ocrVrednost, korigovanaVrednost, nivoPodudarnosti, ocrUspesno, idPolja";
+        return "idObrazac, idStavke, ocrVrednost, korigovanaVrednost, nivoPodudarnosti, ocrUspesno, idPolja";
     }
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        return idObrazac.getIdObrazac() + ", "
+        return idObrazac.getIdObrazac() + ", " + idStavke + ", "
                 + (ocrVrednost != null ? "'" + ocrVrednost + "'" : "NULL") + ", "
                 + (korigovanaVrednost != null ? "'" + korigovanaVrednost + "'" : "NULL") + ", "
                 + nivoPodudarnosti + ", " + ocrUspesno + ", " + idPolja.getIdPolja();
@@ -125,7 +125,7 @@ public class StavkeObrasca implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiPrimarniKljuc() {
-        return "stavkeobrasca.idStavke = " + idStavke;
+        return "stavkeobrasca.idObrazac = " + idObrazac.getIdObrazac() + " AND stavkeobrasca.idStavke = " + idStavke;
     }
 
     @Override

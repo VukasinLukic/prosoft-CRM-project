@@ -18,6 +18,22 @@ public class PromeniStudijskiProgramOperacija extends ApstraktnaGenerickaOperaci
         if (objekat == null || !(objekat instanceof StudijskiProgram)) {
             throw new Exception("Objekat mora biti tipa StudijskiProgram!");
         }
+        StudijskiProgram sp = (StudijskiProgram) objekat;
+        if (sp.getNaziv() == null || sp.getNaziv().isEmpty()) {
+            throw new Exception("Naziv je obavezan!");
+        }
+        if (sp.getOznaka() == null || sp.getOznaka().isEmpty()) {
+            throw new Exception("Oznaka je obavezna!");
+        }
+        if (sp.getOznaka().length() > 10) {
+            throw new Exception("Oznaka ne sme biti duza od 10 karaktera!");
+        }
+        if (sp.getOznaka().length() > sp.getNaziv().length() / 2) {
+            throw new Exception("Oznaka ne sme biti duza od polovine duzine naziva!");
+        }
+        if (sp.getStepenStudija() == null) {
+            throw new Exception("Stepen studija je obavezan!");
+        }
     }
 
     @Override

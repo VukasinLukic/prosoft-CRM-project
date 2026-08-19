@@ -4,10 +4,8 @@
  */
 package operacije.obrazac;
 
-import domen.ApstraktniDomenskiObjekat;
 import domen.SV20Obrazac;
-import domen.StavkeObrasca;
-import java.util.List;
+import java.sql.SQLException;
 import operacije.ApstraktnaGenerickaOperacija;
 
 /**
@@ -30,16 +28,14 @@ public class ObrisiSV20ObrazacOperacija extends ApstraktnaGenerickaOperacija {
     @Override
     protected void izvrsiOperaciju(Object objekat, String kljuc) throws Exception {
         SV20Obrazac o = (SV20Obrazac) objekat;
-        
-        // Prvo obrisi sve stavke obrasca
-        String uslovStavke = " WHERE idObrazac = " + o.getIdObrazac();
-        List<ApstraktniDomenskiObjekat> stavke = broker.getAll(new StavkeObrasca(), uslovStavke);
-        
-        for (ApstraktniDomenskiObjekat ado : stavke) {
-            broker.delete((StavkeObrasca) ado);
+
+        // Namerno se NE brisu stavke obrasca rucno pre ovoga: fk_st_obrazac je definisan kao
+        // ON DELETE RESTRICT (dokumentovano u IMPLEMENTACIONI_PLAN.md), pa baza sama sprecava
+        // brisanje obrasca koji jos uvek ima stavke - to ne treba tiho zaobilaziti u aplikaciji.
+        try {
+            broker.delete(o);
+        } catch (SQLException ex) {
+            throw new Exception("Obrazac se ne moze obrisati jer ima povezane stavke obrasca. Prvo obrisite/prebacite stavke.");
         }
-        
-        // Zatim obrisi obrazac
-        broker.delete(o);
     }
 }

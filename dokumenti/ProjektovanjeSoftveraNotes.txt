@@ -1,0 +1,60 @@
+mora da bude Model View Controler 
+da postoji Genericki broker sa optim domenskim objektom 
+da postoji apsraktna sistemska operacija 
+da koristimo template method pattern 
+OVO JE MUST HAVE IZNAD 
+
+klijent server baza 
+sa soketima i nitima 
+Db broker mora biti genericki! 
+ Prijava (login) mora postojati funkcionalno u kodu — sprečiti duplu prijavu istog korisnika, validacije i na klijentu i na serveru. Ne mora nužno biti dokumentovana kao poseban slučaj korišćenja/sistemska operacija — "niko neće ići kroz dokumentaciju zbog toga", ali u kodu mora da postoji. 
+
+
+Dokumentacija o projektu : 
+8–10 detaljnih + 2 složena po jednom izvoru, ili "onih 9" kao podrazumevani broj iz Sinišinog generatora. Aplikacija sama može raditi i više, dokumentacija ne mora da prati sve.
+
+
+
+
+bitan info : 
+ako imam ovaj problem "Kreiraj" vs. "Ubaci" — poznata zamka
+Sinišin generator kod slučaja korišćenja tipa "Kreiraj X" ima korak gde se prvo pravi prazan objekat u bazi, pa se tek onda forma popunjava — mnogima se to kosi sa ograničenjima baze i nema smisla. Rešenje koje je predložila Dragica: slučaj se može preimenovati iz "Kreiraj" u "Ubaci" i tok pojednostaviti, uz odgovarajuću izmenu dijagrama sekvenci u dokumentaciji da odgovara novom nazivu i toku.
+
+"Mora, jer prvo kreiraš prazan objekat u bazu, pa se onda otvara forma gde popuniš, i Promeni ti je zapravo update tog objekta. Prati samo korake one u SK i videćeš da je tako."
+
+Bobi · 30.07.2026, o redosledu poziva KreirajRacun → PromeniRacun unutar istog slučaja korišćenja 
+
+
+
+Odgovoranje: 
+Osnovni tok koji svi traže
+Bez obzira ko ispituje, gotovo svi traže da se objasni kroz kod jedna sistemska operacija, kompletan put: forma → slanje serveru → obrada kroz sistemsku operaciju → rad sa nitima. Taj tok i logika izvršavanja moraju se prepoznati i u kodu i u dokumentaciji, tečno, bez zastajkivanja.
+Ispitivač je ušao u sistemsku operaciju i tražio da se obriše extends AbstractSystemOperation, ali da implementacija i dalje radi isto — test da li student razume princip nasleđivanja/šablon metode, ne samo da je kod prekopiran. Posle toga je kratko testirao granični slučaj kroz formu i upisao bodove.
+
+Zabeleženo pitanje (Tatjana)
+Tražila je da se objasni implementacija klase AbstractSystemOperation i zašto je baš tako urađeno.
+Da traži da se uživo dopiše ili doradi kod — primeri: dodatna validacija (regex), ili prikaz svih trenutno ulogovanih korisnika ("da vidi kako se barata nitima"). Ako te ispituje Dule, računaj da će tražiti da nešto iskucaš na licu mesta, ne samo da objasniš.
+Neka pitanja koje sam skupio iz grupe:
+- Meni je rekla da joj ispricam i pokazem sta radi aplikacija, i pitala je da joj pokazem i objasnim kod za sistemske operacije na serverskoj strani
+- Gde je properties file u folder server
+- Pokreni preko command prompta: java -jar
+- Operacije sa serverske strane
+- MVC
+- TEMPLEJT metod
+- Singlton
+- Kod za SO na serverskoj strani
+- Arhitektura projekta
+- Nasledjivanje 
+- Kako radi broker
+- Uraditi SELECT 
+- Kako se resava problem deljenih resursa kod niti? -sinhronizacija
+- Šta su niti
+- Šta je soket
+
+Пишите шта су вас питали на одбрани, мени је Илија тражио да исправим да ми се ставке документа и документ (рачун и ставке рачуна) памте одједном а не у две засебне системске операције.
+Иначе неко је оборен јер није знао да објасни како функционишу action event, event listener и остало у вези тога.
+класе које се користе за обраду догађаја у екранским формама
+ми их за пројекат аутоматски правимо преко развојног окружења, па је врв потребно знати како ради псеудо-функција која позива методу у коју пишемо код за догађај
+Стефан Мајонез
+нисам још, сад у четвртак идем да браним, али контам да је дозвољено мењати мало СК, типа оно да мож...
+а што се овога тиче, чини ми се да је неко од асистената рекао да можемо да мењамо секвенце у СК данас на одбрани

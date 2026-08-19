@@ -5,6 +5,7 @@
 package operacije.studijskiprogram;
 
 import domen.StudijskiProgram;
+import java.sql.SQLException;
 import operacije.ApstraktnaGenerickaOperacija;
 
 /**
@@ -22,6 +23,10 @@ public class ObrisiStudijskiProgramOperacija extends ApstraktnaGenerickaOperacij
 
     @Override
     protected void izvrsiOperaciju(Object objekat, String kljuc) throws Exception {
-        broker.delete((StudijskiProgram) objekat);
+        try {
+            broker.delete((StudijskiProgram) objekat);
+        } catch (SQLException ex) {
+            throw new Exception("Studijski program se ne moze obrisati jer postoje povezani studenti.");
+        }
     }
 }

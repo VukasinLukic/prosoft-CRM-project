@@ -149,7 +149,17 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
 
     @Override
     public int hashCode() {
-        int hash = 3;
+        // Mora da bude konzistentan sa poljima koja equals() koristi (pozicija/dimenzije/OCR/regex/tip),
+        // inace se krsi hashCode/equals ugovor.
+        int hash = 7;
+        hash = 31 * hash + this.pozicijaX;
+        hash = 31 * hash + this.pozicijaY;
+        hash = 31 * hash + this.sirina;
+        hash = 31 * hash + this.visina;
+        hash = 31 * hash + Boolean.hashCode(this.podrzavaOCR);
+        hash = 31 * hash + Boolean.hashCode(this.obaveznoPolje);
+        hash = 31 * hash + Objects.hashCode(this.regexValidacija);
+        hash = 31 * hash + Objects.hashCode(this.tipPodatka);
         return hash;
     }
 
@@ -210,9 +220,15 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
+        // pozicijaX/pozicijaY/sirina/visina su primitivni int i ne mogu direktno da nose NULL,
+        // ali baza (CHECK chk_tp_pozicije) zahteva da ova polja budu NULL kada podrzavaOCR=false.
+        // Zato se ovde eksplicitno salje NULL kad OCR nije podrzan, bez obzira na trenutnu int vrednost.
+        String pozicije = podrzavaOCR
+                ? pozicijaX + ", " + pozicijaY + ", " + sirina + ", " + visina
+                : "NULL, NULL, NULL, NULL";
         return "'" + nazivPolja + "', '" + tipPodatka.name() + "', "
                 + (regexValidacija != null ? "'" + regexValidacija + "'" : "NULL") + ", "
-                + pozicijaX + ", " + pozicijaY + ", " + sirina + ", " + visina + ", "
+                + pozicije + ", "
                 + stranica + ", " + redosledObrade + ", " + podrzavaOCR + ", " + obaveznoPolje;
     }
 
@@ -241,10 +257,12 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
+        String pozicije = podrzavaOCR
+                ? "pozicijaX = " + pozicijaX + ", pozicijaY = " + pozicijaY + ", sirina = " + sirina + ", visina = " + visina
+                : "pozicijaX = NULL, pozicijaY = NULL, sirina = NULL, visina = NULL";
         return "nazivPolja = '" + nazivPolja + "', tipPodatka = '" + tipPodatka.name() + "', "
                 + "regexValidacija = " + (regexValidacija != null ? "'" + regexValidacija + "'" : "NULL") + ", "
-                + "pozicijaX = " + pozicijaX + ", pozicijaY = " + pozicijaY + ", "
-                + "sirina = " + sirina + ", visina = " + visina + ", stranica = " + stranica + ", "
+                + pozicije + ", stranica = " + stranica + ", "
                 + "redosledObrade = " + redosledObrade + ", podrzavaOCR = " + podrzavaOCR + ", obaveznoPolje = " + obaveznoPolje;
     }
 
