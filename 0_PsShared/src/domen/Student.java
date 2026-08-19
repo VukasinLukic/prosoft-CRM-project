@@ -139,7 +139,7 @@ public class Student implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        return "'" + indeks + "', '" + jmbg + "', '" + ime + "', '" + prezime + "', '" + mestoRodjenja + "', '" + "', '" + adresaStanovanja + "', " + studijskiProgram.getIdStudProgram();
+        return "'" + indeks + "', '" + jmbg + "', '" + ime + "', '" + prezime + "', '" + mestoRodjenja  + "', '" + adresaStanovanja + "', " + studijskiProgram.getIdStudProgram();
     }
 
     @Override

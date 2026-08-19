@@ -113,7 +113,7 @@ public class ZaposleniTermin implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiNazivTabele() {
-        return "ZaposleniTermin";
+        return "zaposleni_termin";
     }
 
     @Override
