@@ -28,20 +28,117 @@ public class GlavnaForma extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuBar2 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        jMenu2 = new javax.swing.JMenu();
+        jMenuBar3 = new javax.swing.JMenuBar();
+        jMenu3 = new javax.swing.JMenu();
+        jMenu4 = new javax.swing.JMenu();
+        jMenu5 = new javax.swing.JMenu();
+        jMenu6 = new javax.swing.JMenu();
+        jMenu7 = new javax.swing.JMenu();
+        jMenuBar4 = new javax.swing.JMenuBar();
+        jMenu8 = new javax.swing.JMenu();
+        jMenu9 = new javax.swing.JMenu();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenu10 = new javax.swing.JMenu();
+        jMenuBar5 = new javax.swing.JMenuBar();
+        jMenu11 = new javax.swing.JMenu();
+        jMenu12 = new javax.swing.JMenu();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuBar6 = new javax.swing.JMenuBar();
+        jMenu13 = new javax.swing.JMenu();
+        jMenu14 = new javax.swing.JMenu();
+        jMenuBar7 = new javax.swing.JMenuBar();
+        jMenu15 = new javax.swing.JMenu();
+        jMenu16 = new javax.swing.JMenu();
+        jMenuBar8 = new javax.swing.JMenuBar();
+        jMenu17 = new javax.swing.JMenu();
+        jMenu18 = new javax.swing.JMenu();
+        jMenu19 = new javax.swing.JMenu();
+        jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem5 = new javax.swing.JMenuItem();
+        jRadioButtonMenuItem1 = new javax.swing.JRadioButtonMenuItem();
         btnStudenti = new javax.swing.JButton();
         btnZaposleni = new javax.swing.JButton();
         btnSifarnici = new javax.swing.JButton();
         btnObrasci = new javax.swing.JButton();
+        menuObrasci = new javax.swing.JButton();
+        menuStudenti = new javax.swing.JButton();
+        menuZaposleni = new javax.swing.JButton();
+        menuStudijskiProgram = new javax.swing.JButton();
+        menuPodesavanja = new javax.swing.JButton();
+        menuTerminDezurstva = new javax.swing.JButton();
+        menuTipPolja = new javax.swing.JButton();
+        menuOdjava = new javax.swing.JButton();
+        menuOProgramu = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
-        menuObrasci = new javax.swing.JMenu();
-        menuStudenti = new javax.swing.JMenu();
-        menuZaposleni = new javax.swing.JMenu();
-        menuStudijskiProgram = new javax.swing.JMenu();
-        menuTerminDezurstva = new javax.swing.JMenu();
-        menuTipPolja = new javax.swing.JMenu();
-        menuPodesavanja = new javax.swing.JMenu();
-        menuOdjava = new javax.swing.JMenu();
-        menuOProgramu = new javax.swing.JMenu();
+
+        jMenuItem1.setText("jMenuItem1");
+
+        jMenu1.setText("File");
+        jMenuBar2.add(jMenu1);
+
+        jMenu2.setText("Edit");
+        jMenuBar2.add(jMenu2);
+
+        jMenu3.setText("File");
+        jMenuBar3.add(jMenu3);
+
+        jMenu4.setText("Edit");
+        jMenuBar3.add(jMenu4);
+
+        jMenu5.setText("jMenu5");
+
+        jMenu6.setText("jMenu6");
+
+        jMenu7.setText("jMenu7");
+
+        jMenu8.setText("File");
+        jMenuBar4.add(jMenu8);
+
+        jMenu9.setText("Edit");
+        jMenuBar4.add(jMenu9);
+
+        jMenuItem2.setText("jMenuItem2");
+
+        jMenu10.setText("jMenu10");
+
+        jMenu11.setText("File");
+        jMenuBar5.add(jMenu11);
+
+        jMenu12.setText("Edit");
+        jMenuBar5.add(jMenu12);
+
+        jMenuItem3.setText("jMenuItem3");
+
+        jMenu13.setText("File");
+        jMenuBar6.add(jMenu13);
+
+        jMenu14.setText("Edit");
+        jMenuBar6.add(jMenu14);
+
+        jMenu15.setText("File");
+        jMenuBar7.add(jMenu15);
+
+        jMenu16.setText("Edit");
+        jMenuBar7.add(jMenu16);
+
+        jMenu17.setText("File");
+        jMenuBar8.add(jMenu17);
+
+        jMenu18.setText("Edit");
+        jMenuBar8.add(jMenu18);
+
+        jMenu19.setText("jMenu19");
+
+        jMenuItem4.setText("jMenuItem4");
+
+        jMenuItem5.setText("jMenuItem5");
+
+        jRadioButtonMenuItem1.setSelected(true);
+        jRadioButtonMenuItem1.setText("jRadioButtonMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -53,33 +150,23 @@ public class GlavnaForma extends javax.swing.JFrame {
 
         btnObrasci.setText("btnObrasci");
 
-        menuObrasci.setText("Obrasci");
-        jMenuBar1.add(menuObrasci);
+        menuObrasci.setText("menuObrasci");
 
-        menuStudenti.setText("Studenti");
-        jMenuBar1.add(menuStudenti);
+        menuStudenti.setText("menuStudenti");
 
-        menuZaposleni.setText("Zaposleni");
-        jMenuBar1.add(menuZaposleni);
+        menuZaposleni.setText("menuZaposleni");
 
-        menuStudijskiProgram.setText("StudijskiProgrami");
-        jMenuBar1.add(menuStudijskiProgram);
+        menuStudijskiProgram.setText("menuStudijskiProgram");
 
-        menuTerminDezurstva.setText("TerminDezurstva");
-        jMenuBar1.add(menuTerminDezurstva);
+        menuPodesavanja.setText("menuPodesavanja");
 
-        menuTipPolja.setText("TipPolja");
-        jMenuBar1.add(menuTipPolja);
+        menuTerminDezurstva.setText("menuTerminDezurstva");
 
-        menuPodesavanja.setText("Podesavanja");
-        jMenuBar1.add(menuPodesavanja);
+        menuTipPolja.setText("menuTipPolja");
 
-        menuOdjava.setText("Odjava");
-        jMenuBar1.add(menuOdjava);
+        menuOdjava.setText("menuOdjava");
 
-        menuOProgramu.setText("O Programu");
-        jMenuBar1.add(menuOProgramu);
-
+        menuOProgramu.setText("menuOProgramu");
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -87,26 +174,64 @@ public class GlavnaForma extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(40, 40, 40)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnObrasci, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSifarnici, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnZaposleni, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnStudenti, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(581, Short.MAX_VALUE))
+                .addGap(9, 9, 9)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(menuOdjava, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(menuOProgramu, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnObrasci, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnZaposleni, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(menuObrasci, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(menuStudenti, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(menuZaposleni, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(menuStudijskiProgram, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(menuTerminDezurstva, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(15, 15, 15)
+                                .addComponent(menuTipPolja, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(menuPodesavanja, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(35, 35, 35)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnSifarnici, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(btnStudenti, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                .addContainerGap(235, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(88, 88, 88)
-                .addComponent(btnObrasci, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnStudenti, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnZaposleni, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnSifarnici, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(60, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(menuStudenti)
+                    .addComponent(menuObrasci)
+                    .addComponent(menuZaposleni)
+                    .addComponent(menuStudijskiProgram)
+                    .addComponent(menuTerminDezurstva)
+                    .addComponent(menuPodesavanja)
+                    .addComponent(menuTipPolja))
+                .addGap(59, 59, 59)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnObrasci, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnStudenti, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(36, 36, 36)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnZaposleni, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSifarnici, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(menuOdjava)
+                    .addComponent(menuOProgramu))
+                .addContainerGap())
         );
 
         pack();
@@ -209,15 +334,47 @@ public class GlavnaForma extends javax.swing.JFrame {
     private javax.swing.JButton btnSifarnici;
     private javax.swing.JButton btnStudenti;
     private javax.swing.JButton btnZaposleni;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu10;
+    private javax.swing.JMenu jMenu11;
+    private javax.swing.JMenu jMenu12;
+    private javax.swing.JMenu jMenu13;
+    private javax.swing.JMenu jMenu14;
+    private javax.swing.JMenu jMenu15;
+    private javax.swing.JMenu jMenu16;
+    private javax.swing.JMenu jMenu17;
+    private javax.swing.JMenu jMenu18;
+    private javax.swing.JMenu jMenu19;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenu jMenu5;
+    private javax.swing.JMenu jMenu6;
+    private javax.swing.JMenu jMenu7;
+    private javax.swing.JMenu jMenu8;
+    private javax.swing.JMenu jMenu9;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenu menuOProgramu;
-    private javax.swing.JMenu menuObrasci;
-    private javax.swing.JMenu menuOdjava;
-    private javax.swing.JMenu menuPodesavanja;
-    private javax.swing.JMenu menuStudenti;
-    private javax.swing.JMenu menuStudijskiProgram;
-    private javax.swing.JMenu menuTerminDezurstva;
-    private javax.swing.JMenu menuTipPolja;
-    private javax.swing.JMenu menuZaposleni;
+    private javax.swing.JMenuBar jMenuBar2;
+    private javax.swing.JMenuBar jMenuBar3;
+    private javax.swing.JMenuBar jMenuBar4;
+    private javax.swing.JMenuBar jMenuBar5;
+    private javax.swing.JMenuBar jMenuBar6;
+    private javax.swing.JMenuBar jMenuBar7;
+    private javax.swing.JMenuBar jMenuBar8;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JRadioButtonMenuItem jRadioButtonMenuItem1;
+    private javax.swing.JButton menuOProgramu;
+    private javax.swing.JButton menuObrasci;
+    private javax.swing.JButton menuOdjava;
+    private javax.swing.JButton menuPodesavanja;
+    private javax.swing.JButton menuStudenti;
+    private javax.swing.JButton menuStudijskiProgram;
+    private javax.swing.JButton menuTerminDezurstva;
+    private javax.swing.JButton menuTipPolja;
+    private javax.swing.JButton menuZaposleni;
     // End of variables declaration//GEN-END:variables
 }
