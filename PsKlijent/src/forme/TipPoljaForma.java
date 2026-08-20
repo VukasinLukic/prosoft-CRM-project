@@ -117,8 +117,7 @@ public class TipPoljaForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        setSize(1020, 680);
-        setLocationRelativeTo(null);
+        FormeUtil.otvoriPunEkran(this);
     }
 
     private void addRow2(JPanel p, GridBagConstraints g, int row,

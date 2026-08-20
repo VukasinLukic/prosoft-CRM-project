@@ -64,7 +64,7 @@ public class StudijskiProgram implements ApstraktniDomenskiObjekat {
 
     @Override
     public String toString() {
-        return "StudijskiProgram{" + "naziv=" + naziv + '}';
+        return naziv + " (" + oznaka + ")";
     }
 
     @Override

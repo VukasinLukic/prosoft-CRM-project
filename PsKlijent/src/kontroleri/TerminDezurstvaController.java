@@ -27,7 +27,13 @@ public class TerminDezurstvaController {
     public TerminDezurstvaController(TerminDezurstvaForma forma) {
         this.forma = forma;
         addActionListeners();
+        ucitajTipoveTermina();
         ucitajPodatke();
+    }
+
+    private void ucitajTipoveTermina() {
+        forma.getCmbTipTermina().removeAllItems();
+        for (tipTermina t : tipTermina.values()) { forma.getCmbTipTermina().addItem(t); }
     }
 
     private void addActionListeners() {

@@ -26,7 +26,13 @@ public class TipPoljaController {
     public TipPoljaController(TipPoljaForma forma) {
         this.forma = forma;
         addActionListeners();
+        ucitajTipovePodataka();
         ucitajPodatke();
+    }
+
+    private void ucitajTipovePodataka() {
+        forma.getCmbTipPodatka().removeAllItems();
+        for (tipPodatka t : tipPodatka.values()) { forma.getCmbTipPodatka().addItem(t); }
     }
 
     private void addActionListeners() {

@@ -28,12 +28,17 @@ public class SV20ObrazacController {
 
     private final SV20ObrazacForma forma;
     private final SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+    // Puni objekti sa servera (za razliku od tabele koja drži samo formatirane stringove/int-ove za prikaz) -
+    // koriste se u popuniFormu() da selektovani obrazac zadrži SVA polja (npr. datumUnosa), umesto da se
+    // ručno rekonstruiše iz ćelija tabele i time izgubi ono što tabela ne prikazuje.
+    private List<SV20Obrazac> ucitaniObrasci = new java.util.ArrayList<>();
 
     public SV20ObrazacController(SV20ObrazacForma forma) {
         this.forma = forma;
         addActionListeners();
         ucitajStudente();
         ucitajZaposlene();
+        ucitajStatuse();
         ucitajPodatke();
     }
 
@@ -102,9 +107,16 @@ public class SV20ObrazacController {
         }
     }
 
+    private void ucitajStatuse() {
+        forma.getCmbStatus().removeAllItems();
+        for (Status s : Status.values()) { forma.getCmbStatus().addItem(s); }
+        forma.getCmbStatus().setSelectedItem(Status.PODNET);
+    }
+
     private void ucitajPodatke() {
         try {
             List<SV20Obrazac> lista = Komunikacija.getInstanca().vratiListuSV20Obrazaca("");
+            ucitaniObrasci = lista;
             DefaultTableModel model = forma.getTableModelObrasci();
             model.setRowCount(0);
             for (SV20Obrazac o : lista) {
@@ -124,10 +136,27 @@ public class SV20ObrazacController {
             o.getSemestar(),
             o.getStatus(),
             o.getIndeks() != null ? o.getIndeks().getIndeks() : "",
-            o.getIdZaposlenog() != null ? o.getIdZaposlenog().getIme() + " " + o.getIdZaposlenog().getPrezime() : "",
+            imeZaposlenog(o.getIdZaposlenog()),
             o.isOcrIzvrseno() ? "Da" : "Ne",
             o.getPutanjaDoFajla() != null ? o.getPutanjaDoFajla() : ""
         };
+    }
+
+    /**
+     * Generički broker učita SV20Obrazac preko "SELECT * FROM sv20obrazac" (bez JOIN-a),
+     * pa vratiObjekatIzRS zna samo ID zaposlenog, ne i ime/prezime — otud su ta polja null
+     * i tabela je pre ove popravke prikazivala "null null". Ime tražimo u listi zaposlenih
+     * koja je već učitana za cmbZaposleni, umesto što se oslanjamo na nepotpun objekat iz baze.
+     */
+    private String imeZaposlenog(ZaposleniFakulteta stub) {
+        if (stub == null) return "";
+        for (int i = 0; i < forma.getCmbZaposleni().getItemCount(); i++) {
+            ZaposleniFakulteta z = forma.getCmbZaposleni().getItemAt(i);
+            if (z.getIdZaposlenog() == stub.getIdZaposlenog()) {
+                return z.getIme() + " " + z.getPrezime();
+            }
+        }
+        return "";
     }
 
     private void ucitajStavke(int idObrazac) {
@@ -163,7 +192,7 @@ public class SV20ObrazacController {
             int skolskaGodina = (int) forma.getSpnSkolskaGodina().getValue();
             int semestar = (int) forma.getSpnSemestar().getValue();
             Status status = (Status) forma.getCmbStatus().getSelectedItem();
-            String putanjaFajla = forma.getTxtPutanjaFajla().getText().trim();
+            String putanjaFajla = normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim());
 
             if (!validirajPodatke(student, zaposleni, putanjaFajla)) return;
 
@@ -203,7 +232,7 @@ public class SV20ObrazacController {
             int skolskaGodina = (int) forma.getSpnSkolskaGodina().getValue();
             int semestar = (int) forma.getSpnSemestar().getValue();
             Status status = (Status) forma.getCmbStatus().getSelectedItem();
-            String putanjaFajla = forma.getTxtPutanjaFajla().getText().trim();
+            String putanjaFajla = normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim());
 
             if (!validirajPodatke(student, zaposleni, putanjaFajla)) return;
 
@@ -265,6 +294,7 @@ public class SV20ObrazacController {
             }
 
             List<SV20Obrazac> lista = Komunikacija.getInstanca().vratiListuSV20Obrazaca(kriterijum);
+            ucitaniObrasci = lista;
             DefaultTableModel model = forma.getTableModelObrasci();
             model.setRowCount(0);
             for (SV20Obrazac o : lista) { model.addRow(buildRow(o)); }
@@ -288,8 +318,18 @@ public class SV20ObrazacController {
         fileChooser.setFileFilter(new FileNameExtensionFilter(
                 "Slike i PDF (*.jpg, *.png, *.pdf, *.tif)", "jpg", "jpeg", "png", "pdf", "tif", "tiff"));
         if (fileChooser.showOpenDialog(forma) == JFileChooser.APPROVE_OPTION) {
-            forma.getTxtPutanjaFajla().setText(fileChooser.getSelectedFile().getAbsolutePath());
+            forma.getTxtPutanjaFajla().setText(normalizujPutanju(fileChooser.getSelectedFile().getAbsolutePath()));
         }
+    }
+
+    /**
+     * Baza gradi upite spajanjem stringova bez escape-ovanja, a MySQL tretira
+     * '\' kao escape karakter u string literalima — Windows putanje sa '\'
+     * se zato osakate pri upisu (npr. "C:\Users\..." postane "C:Users...").
+     * Kosa crta '/' radi identično kao '\' i na Windows-u i bezbedna je za SQL.
+     */
+    private static String normalizujPutanju(String putanja) {
+        return putanja == null ? null : putanja.replace('\\', '/');
     }
 
     private void urediStavke() {
@@ -309,7 +349,7 @@ public class SV20ObrazacController {
             return;
         }
 
-        String putanja = forma.getTxtPutanjaFajla().getText().trim();
+        String putanja = normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim());
         if (putanja.isEmpty()) {
             JOptionPane.showMessageDialog(forma,
                     "Unesite ili odaberite putanju do fajla pre pokretanja OCR analize!",
@@ -318,9 +358,18 @@ public class SV20ObrazacController {
         }
 
         java.io.File fajl = new java.io.File(putanja);
+        System.out.println("[OCR debug] putanja iz forme/baze : " + putanja);
+        System.out.println("[OCR debug] apsolutna putanja      : " + fajl.getAbsolutePath());
+        System.out.println("[OCR debug] fajl.exists()          : " + fajl.exists());
+        System.out.println("[OCR debug] fajl.isFile()          : " + fajl.isFile());
+        System.out.println("[OCR debug] radni direktorijum     : " + System.getProperty("user.dir"));
         if (!fajl.exists()) {
             JOptionPane.showMessageDialog(forma,
-                    "Fajl nije pronađen:\n" + putanja,
+                    "Fajl nije pronađen:\n" + putanja
+                    + "\n\nApsolutna putanja koju je klijent proverio:\n" + fajl.getAbsolutePath()
+                    + "\n\nAko je putanja sačuvana pre poslednje popravke, ponovo odaberi fajl\n"
+                    + "dugmetom \"Odaberi fajl...\" i sačuvaj obrazac (stare putanje u bazi\n"
+                    + "mogu biti oštećene zbog bag-a sa '\\' karakterima).",
                     "Greška", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -332,6 +381,7 @@ public class SV20ObrazacController {
         SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
             private int uspesnih = 0;
             private int neuspesnih = 0;
+            private int greskaPriCuvanju = 0;
 
             @Override
             protected String doInBackground() throws Exception {
@@ -378,9 +428,17 @@ public class SV20ObrazacController {
                     stavka.setNivoPodudarnosti(op.getKonfidens());
                     stavka.setOcrUspesno(op.isUspesno());
 
-                    Komunikacija.getInstanca().kreirajStavkuObrasca(stavka);
-
-                    if (op.isUspesno()) uspesnih++; else neuspesnih++;
+                    // Ne sme jedna odbijena stavka (npr. neko buduce DB ogranicenje) da obori
+                    // ceo batch i ostavi obrazac napola sacuvan - nastavi sa ostalim poljima
+                    // i prijavi na kraju koliko ih je stvarno propalo.
+                    try {
+                        Komunikacija.getInstanca().kreirajStavkuObrasca(stavka);
+                        if (op.isUspesno()) uspesnih++; else neuspesnih++;
+                    } catch (Exception stavkaEx) {
+                        greskaPriCuvanju++;
+                        System.out.println("[OCR debug] Cuvanje stavke '" + op.getNazivPolja()
+                                + "' nije uspelo: " + stavkaEx.getMessage());
+                    }
                 }
 
                 obrazac.setOcrIzvrseno(true);
@@ -406,10 +464,15 @@ public class SV20ObrazacController {
                     if (poruka != null) {
                         JOptionPane.showMessageDialog(forma, poruka, "OCR info", JOptionPane.INFORMATION_MESSAGE);
                     } else {
-                        JOptionPane.showMessageDialog(forma,
-                                "OCR analiza je završena!\n\nUspešno obrađenih polja: " + uspesnih
-                                + "\nNeuspešnih polja: " + neuspesnih,
-                                "OCR uspeh", JOptionPane.INFORMATION_MESSAGE);
+                        String poruka2 = "OCR analiza je završena!\n\nUspešno obrađenih polja: " + uspesnih
+                                + "\nNeuspešnih polja: " + neuspesnih;
+                        if (greskaPriCuvanju > 0) {
+                            poruka2 += "\nNije sačuvano u bazi (greška): " + greskaPriCuvanju
+                                    + "\n\nDetalji u konzoli klijenta.";
+                        }
+                        JOptionPane.showMessageDialog(forma, poruka2,
+                                greskaPriCuvanju > 0 ? "OCR delimično uspešan" : "OCR uspeh",
+                                greskaPriCuvanju > 0 ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE);
                     }
                     ucitajPodatke();
                     ucitajStavke(obrazac.getIdObrazac());
@@ -443,39 +506,49 @@ public class SV20ObrazacController {
         int red = forma.getTblObrasci().getSelectedRow();
         if (red >= 0) {
             int id = (int) forma.getTableModelObrasci().getValueAt(red, 0);
-            int skolskaGodina = (int) forma.getTableModelObrasci().getValueAt(red, 2);
-            int semestar = (int) forma.getTableModelObrasci().getValueAt(red, 3);
-            Status status = (Status) forma.getTableModelObrasci().getValueAt(red, 4);
-            String indeksStudenta = (String) forma.getTableModelObrasci().getValueAt(red, 5);
-            String putanja = (String) forma.getTableModelObrasci().getValueAt(red, 8);
 
-            forma.getSpnSkolskaGodina().setValue(skolskaGodina);
-            forma.getSpnSemestar().setValue(semestar);
-            forma.getCmbStatus().setSelectedItem(status);
-            if (putanja != null) { forma.getTxtPutanjaFajla().setText(putanja); }
+            // Uzmi PUN objekat sa servera (ucitaniObrasci), ne rekonstruisi ga iz celija tabele -
+            // tabela ne prikazuje sva polja (npr. datumUnosa), pa je rucna rekonstrukcija ranije
+            // pravila obrazac sa datumUnosa=null, sto je rusilo izmenu/OCR upis (NullPointerException
+            // u SV20Obrazac.vratiVrednostiZaIzmenu() -> SimpleDateFormat.format(null)).
+            SV20Obrazac o = pronadjiObrazacPoId(id);
+            if (o == null) return;
 
+            forma.getSpnSkolskaGodina().setValue(o.getSkolskaGodina());
+            forma.getSpnSemestar().setValue(o.getSemestar());
+            forma.getCmbStatus().setSelectedItem(o.getStatus());
+            if (o.getPutanjaDoFajla() != null) { forma.getTxtPutanjaFajla().setText(o.getPutanjaDoFajla()); }
+
+            String indeksStudenta = o.getIndeks() != null ? o.getIndeks().getIndeks() : null;
             for (int i = 0; i < forma.getCmbStudent().getItemCount(); i++) {
                 Student s = forma.getCmbStudent().getItemAt(i);
                 if (s.getIndeks() != null && s.getIndeks().equals(indeksStudenta)) {
                     forma.getCmbStudent().setSelectedIndex(i);
+                    o.setIndeks(s); // puni objekat iz combo-a (server vraca samo indeks bez imena)
                     break;
                 }
             }
 
-            SV20Obrazac o = new SV20Obrazac();
-            o.setIdObrazac(id);
-            o.setSkolskaGodina(skolskaGodina);
-            o.setSemestar(semestar);
-            o.setStatus(status);
-            o.setPutanjaDoFajla(putanja);
-            Student s = (Student) forma.getCmbStudent().getSelectedItem();
-            o.setIndeks(s);
-            ZaposleniFakulteta z = (ZaposleniFakulteta) forma.getCmbZaposleni().getSelectedItem();
-            o.setIdZaposlenog(z);
-            forma.setSelektovaniObrazac(o);
+            Integer idZaposlenog = o.getIdZaposlenog() != null ? o.getIdZaposlenog().getIdZaposlenog() : null;
+            for (int i = 0; i < forma.getCmbZaposleni().getItemCount(); i++) {
+                ZaposleniFakulteta z = forma.getCmbZaposleni().getItemAt(i);
+                if (idZaposlenog != null && z.getIdZaposlenog() == idZaposlenog) {
+                    forma.getCmbZaposleni().setSelectedIndex(i);
+                    o.setIdZaposlenog(z); // puni objekat iz combo-a (server vraca samo ID)
+                    break;
+                }
+            }
 
+            forma.setSelektovaniObrazac(o);
             ucitajStavke(id);
         }
+    }
+
+    private SV20Obrazac pronadjiObrazacPoId(int id) {
+        for (SV20Obrazac o : ucitaniObrasci) {
+            if (o.getIdObrazac() == id) return o;
+        }
+        return null;
     }
 
     private boolean validirajPodatke(Student student, ZaposleniFakulteta zaposleni, String putanjaFajla) {

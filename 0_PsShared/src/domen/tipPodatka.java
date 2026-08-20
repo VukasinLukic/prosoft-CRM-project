@@ -10,6 +10,17 @@ package domen;
  */
 public enum tipPodatka {
     TEXT, NUMERIC, ALPHANUMERIC, DATE, BOOLEAN;
-        //obrati paznju da li se sa bazom uvek poklapa ... 
+        //obrati paznju da li se sa bazom uvek poklapa ...
 
+    @Override
+    public String toString() {
+        switch (this) {
+            case TEXT: return "Tekst";
+            case NUMERIC: return "Broj";
+            case ALPHANUMERIC: return "Alfanumerički";
+            case DATE: return "Datum";
+            case BOOLEAN: return "Da/Ne";
+            default: return name();
+        }
+    }
 }

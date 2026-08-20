@@ -105,8 +105,7 @@ public class ZaposleniForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        setSize(980, 680);
-        setLocationRelativeTo(null);
+        FormeUtil.otvoriPunEkran(this);
     }
 
     private void addLabeledRow(JPanel p, GridBagConstraints g, int row,

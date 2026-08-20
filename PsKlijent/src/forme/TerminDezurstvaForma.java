@@ -90,8 +90,7 @@ public class TerminDezurstvaForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        setSize(760, 560);
-        setLocationRelativeTo(null);
+        FormeUtil.otvoriPunEkran(this);
     }
 
     private JButton makeButton(String text, Color bg) {

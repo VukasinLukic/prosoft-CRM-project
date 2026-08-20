@@ -140,15 +140,6 @@ public class SV20ObrazacForma extends JDialog {
         g.gridx = 3;
         formPanel.add(btnOdaberiFajl, g);
 
-        // Row 4: OCR button
-        g.gridx = 0; g.gridy = 4; g.fill = GridBagConstraints.NONE; g.weightx = 0;
-        JLabel ocrLabel = new JLabel("OCR analiza:");
-        ocrLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        formPanel.add(ocrLabel, g);
-        g.gridx = 1; g.gridwidth = 2;
-        formPanel.add(btnPokreniOcr, g);
-        g.gridwidth = 1;
-
         // ── CRUD buttons panel ────────────────────────────────────────────────
         JPanel crudPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         crudPanel.add(btnOcisti);
@@ -167,12 +158,20 @@ public class SV20ObrazacForma extends JDialog {
         topGroup.add(formWithButtons, BorderLayout.CENTER);
 
         // ── Obrasci table ─────────────────────────────────────────────────────
-        JPanel obrazaciPanel = new JPanel(new BorderLayout());
+        JPanel obrazaciPanel = new JPanel(new BorderLayout(0, 4));
         obrazaciPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(180, 210, 240)),
                 " Lista obrazaca  (dvostruki klik = uredi stavke) "));
         jScrollPane1.setPreferredSize(new Dimension(1100, 200));
         obrazaciPanel.add(jScrollPane1, BorderLayout.CENTER);
+
+        JPanel obrazaciToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        JLabel ocrHint = new JLabel("Selektuj obrazac gore, pa pokreni OCR nad njim:");
+        ocrHint.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        ocrHint.setForeground(new Color(97, 97, 97));
+        obrazaciToolbar.add(ocrHint);
+        obrazaciToolbar.add(btnPokreniOcr);
+        obrazaciPanel.add(obrazaciToolbar, BorderLayout.SOUTH);
 
         // ── Stavke table ──────────────────────────────────────────────────────
         JPanel stavkePanel = new JPanel(new BorderLayout());
@@ -194,8 +193,7 @@ public class SV20ObrazacForma extends JDialog {
         add(splitCenter, BorderLayout.CENTER);
 
         initCustomTableModels();
-        setSize(1200, 860);
-        setLocationRelativeTo(null);
+        FormeUtil.otvoriPunEkran(this);
     }
 
     private JButton makeButton(String text, Color bg) {

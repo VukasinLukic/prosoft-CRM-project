@@ -95,7 +95,7 @@ public class LoginForma extends JFrame {
 
         setContentPane(content);
         pack();
-        setLocationRelativeTo(null);
+        FormeUtil.otvoriPunEkran(this);
 
         getRootPane().setDefaultButton(btnUlogujSe);
     }

@@ -10,6 +10,15 @@ package domen;
  */
 public enum stepenStudija {
     OAS, MAS, DAS;
-        //obrati paznju da li se sa bazom uvek poklapa ... 
+        //obrati paznju da li se sa bazom uvek poklapa ...
 
+    @Override
+    public String toString() {
+        switch (this) {
+            case OAS: return "Osnovne akademske studije";
+            case MAS: return "Master akademske studije";
+            case DAS: return "Doktorske akademske studije";
+            default: return name();
+        }
+    }
 }

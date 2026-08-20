@@ -144,7 +144,7 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
 
     @Override
     public String toString() {
-        return "TipPolja{" + "nazivPolja=" + nazivPolja + '}';
+        return nazivPolja;
     }
 
     @Override

@@ -84,7 +84,7 @@ public class ZaposleniFakulteta implements ApstraktniDomenskiObjekat {
 
     @Override
     public String toString() {
-        return "ZaposleniFakulteta{" + "ime=" + ime + ", prezime=" + prezime + '}';
+        return ime + " " + prezime;
     }
 
     @Override

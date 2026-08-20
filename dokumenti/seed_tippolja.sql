@@ -29,7 +29,7 @@ INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozici
 VALUES ('ime_prezime_studenta', 'TEXT', NULL, 98, 331, 258, 33, 1, 1, true, true);
 
 INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje)
-VALUES ('jmbg', 'NUMERIC', '^[0-9]{13}$', 98, 390, 258, 33, 1, 2, true, true);
+VALUES ('jmbg', 'NUMERIC', NULL, 98, 390, 258, 33, 1, 2, true, true);
 
 INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje)
 VALUES ('broj_indeksa', 'ALPHANUMERIC', '^[0-9]{4}/[0-9]{4}$', 400, 390, 200, 33, 1, 3, true, true);
@@ -50,10 +50,10 @@ INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozici
 VALUES ('opstina_ustanove', 'TEXT', NULL, 98, 1020, 400, 33, 1, 8, true, false);
 
 INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje)
-VALUES ('godina_prvog_upisa', 'NUMERIC', '^(19|20)[0-9]{2}$', 600, 1020, 120, 33, 1, 9, true, true);
+VALUES ('godina_prvog_upisa', 'NUMERIC', NULL, 600, 1020, 120, 33, 1, 9, true, true);
 
 INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje)
-VALUES ('espb_bodovi', 'NUMERIC', NULL, 780, 1020, 100, 33, 1, 10, false, false);
+VALUES ('espb_bodovi', 'NUMERIC', NULL, NULL, NULL, NULL, NULL, 1, 10, false, false);
 
 INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje)
 VALUES ('nacin_finansiranja', 'BOOLEAN', NULL, 186, 1100, 400, 80, 1, 11, true, true);
@@ -68,13 +68,13 @@ INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozici
 VALUES ('srednja_skola_opstina', 'TEXT', NULL, 550, 1280, 300, 33, 1, 14, true, false);
 
 INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje)
-VALUES ('srednja_skola_godina', 'NUMERIC', '^(19|20)[0-9]{2}$', 880, 1280, 100, 33, 1, 15, true, false);
+VALUES ('srednja_skola_godina', 'NUMERIC', NULL, 880, 1280, 100, 33, 1, 15, true, false);
 
 INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje)
 VALUES ('pol', 'BOOLEAN', NULL, 186, 1370, 200, 60, 1, 16, true, true);
 
 INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje)
-VALUES ('godina_rodjenja', 'NUMERIC', '^(19[4-9][0-9]|200[0-9]|2010)$', 450, 1370, 100, 33, 1, 17, true, true);
+VALUES ('godina_rodjenja', 'NUMERIC', NULL, 450, 1370, 100, 33, 1, 17, true, true);
 
 INSERT INTO tippolja (nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje)
 VALUES ('mesto_rodjenja', 'TEXT', NULL, 600, 1370, 380, 33, 1, 18, true, true);

@@ -116,8 +116,7 @@ public class StudentForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        setSize(980, 700);
-        setLocationRelativeTo(null);
+        FormeUtil.otvoriPunEkran(this);
     }
 
     private void addRow(JPanel panel, GridBagConstraints g, int startX, int startY,

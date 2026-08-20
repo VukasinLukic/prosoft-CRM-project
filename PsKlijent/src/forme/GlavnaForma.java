@@ -140,8 +140,7 @@ public class GlavnaForma extends JFrame {
         add(contentPanel, BorderLayout.CENTER);
         add(bottomBar, BorderLayout.SOUTH);
 
-        setSize(1100, 700);
-        setLocationRelativeTo(null);
+        FormeUtil.otvoriPunEkran(this);
     }
 
     private JButton makeNavButton(String text) {

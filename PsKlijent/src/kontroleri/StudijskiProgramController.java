@@ -27,7 +27,13 @@ public class StudijskiProgramController {
     public StudijskiProgramController(StudijskiProgramForma forma) {
         this.forma = forma;
         addActionListeners();
+        ucitajStepeneStudija();
         ucitajPodatke();
+    }
+
+    private void ucitajStepeneStudija() {
+        forma.getCmbStepenStudija().removeAllItems();
+        for (stepenStudija s : stepenStudija.values()) { forma.getCmbStepenStudija().addItem(s); }
     }
 
     private void addActionListeners() {

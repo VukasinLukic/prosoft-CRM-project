@@ -124,8 +124,7 @@ public class StavkeObrascaForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        setSize(1050, 640);
-        setLocationRelativeTo(null);
+        FormeUtil.otvoriPunEkran(this);
     }
 
     private JButton makeButton(String text, Color bg) {

@@ -18,6 +18,7 @@ public class OcrKlijent {
 
     public static void proveriServis() throws Exception {
         HttpClient client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
         HttpRequest req = HttpRequest.newBuilder()
@@ -33,6 +34,10 @@ public class OcrKlijent {
 
     public static List<OcrPolje> obradiObrazac(String putanjaFajla, String obrazacId) throws Exception {
         java.nio.file.Path filePath = Paths.get(putanjaFajla);
+        System.out.println("[OcrKlijent debug] primljena putanja : " + putanjaFajla);
+        System.out.println("[OcrKlijent debug] Paths.get() daje  : " + filePath);
+        System.out.println("[OcrKlijent debug] toAbsolutePath()  : " + filePath.toAbsolutePath());
+        System.out.println("[OcrKlijent debug] Files.exists()    : " + Files.exists(filePath));
         if (!Files.exists(filePath)) {
             throw new Exception("Fajl nije pronađen: " + putanjaFajla);
         }
@@ -41,10 +46,12 @@ public class OcrKlijent {
         String fileName = filePath.getFileName().toString();
         String mimeType = guessMimeType(fileName);
         String boundary = "----OcrBoundary" + System.currentTimeMillis();
+        System.out.println("[OcrKlijent debug] fajl: " + fileName + " (" + fileBytes.length + " B, " + mimeType + "), obrazacId=" + obrazacId);
 
         byte[] body = buildMultipartBody(boundary, fileBytes, fileName, mimeType, obrazacId);
 
         HttpClient client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
 
@@ -55,13 +62,21 @@ public class OcrKlijent {
                 .POST(HttpRequest.BodyPublishers.ofByteArray(body))
                 .build();
 
+        System.out.println("[OcrKlijent debug] POST " + OCR_URL);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("[OcrKlijent debug] odgovor status=" + response.statusCode()
+                + " telo=" + trimZaLog(response.body()));
 
         if (response.statusCode() != 200) {
             throw new Exception("OCR servis vratio grešku " + response.statusCode() + ": " + response.body());
         }
 
         return parseOcrResponse(response.body());
+    }
+
+    private static String trimZaLog(String s) {
+        if (s == null) return "null";
+        return s.length() > 500 ? s.substring(0, 500) + "... (" + s.length() + " karaktera ukupno)" : s;
     }
 
     private static byte[] buildMultipartBody(String boundary, byte[] fileBytes,

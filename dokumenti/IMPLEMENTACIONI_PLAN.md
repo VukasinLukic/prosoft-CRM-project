@@ -308,8 +308,12 @@ CREATE TABLE stavkeobrasca (
     ocrUspesno         BOOLEAN NOT NULL DEFAULT FALSE,
     idPolja            INT NOT NULL,
     PRIMARY KEY (idObrazac, idStavke),
-    CONSTRAINT chk_st_podudarnost CHECK (nivoPodudarnosti >= 0 AND nivoPodudarnosti <= 100
-        AND (ocrUspesno = FALSE OR nivoPodudarnosti > 0)),
+    -- NAPOMENA (2026-08-20): originalno je ovde bilo i "AND (ocrUspesno = FALSE OR nivoPodudarnosti > 0)",
+    -- ali OCR mikroservis vraca is_valid=True (format validacija prosla, npr. prazno dozvoljeno polje)
+    -- nezavisno od confidence=0 (OCR nije nasao nista da procita) - to su dve odvojene stvari, ne
+    -- treba da budu spregnute. Uklonjeno jer je rusilo ceo OCR batch cim naidje na takvo polje
+    -- (npr. nacionalna_pripadnost, broj_glasackog_lista - validna prazna polja).
+    CONSTRAINT chk_st_podudarnost CHECK (nivoPodudarnosti >= 0 AND nivoPodudarnosti <= 100),
     CONSTRAINT fk_st_obrazac FOREIGN KEY (idObrazac) REFERENCES sv20obrazac(idObrazac)
         ON UPDATE CASCADE ON DELETE RESTRICT,      -- dokumentacija (3.6, tabela 6/7): DELETE RESTRICTED, ne CASCADE!
     CONSTRAINT fk_st_polje FOREIGN KEY (idPolja) REFERENCES tippolja(idPolja)

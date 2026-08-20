@@ -98,8 +98,7 @@ public class StudijskiProgramForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        setSize(800, 580);
-        setLocationRelativeTo(null);
+        FormeUtil.otvoriPunEkran(this);
     }
 
     private void cmbStepenStudijaActionPerformed(java.awt.event.ActionEvent evt) {}

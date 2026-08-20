@@ -94,7 +94,7 @@ public class Student implements ApstraktniDomenskiObjekat {
 
     @Override
     public String toString() {
-        return "Student{" + "ime=" + ime + ", prezime=" + prezime + '}';
+        return indeks + " - " + ime + " " + prezime;
     }
 
     @Override

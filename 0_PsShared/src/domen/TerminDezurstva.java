@@ -53,7 +53,7 @@ public class TerminDezurstva implements ApstraktniDomenskiObjekat {
 
     @Override
     public String toString() {
-        return "TerminDezurstva{" + "tipTermina=" + tipTermina + '}';
+        return tipTermina + " - " + kancelarija;
     }
 
     @Override
