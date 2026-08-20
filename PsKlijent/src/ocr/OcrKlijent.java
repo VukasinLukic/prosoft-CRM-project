@@ -1,5 +1,7 @@
 package ocr;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -9,12 +11,16 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import javax.imageio.ImageIO;
 
 public class OcrKlijent {
 
     private static final String OCR_URL = "http://localhost:9001/api/ocr/process";
     private static final String HEALTH_URL = "http://localhost:9001/api/health";
+    private static final String RENDER_UPLOAD_URL = "http://localhost:9001/api/template/render-upload";
+    private static final String RENDER_PAGE_URL = "http://localhost:9001/api/template/render-page";
 
     public static void proveriServis() throws Exception {
         HttpClient client = HttpClient.newBuilder()
@@ -72,6 +78,82 @@ public class OcrKlijent {
         }
 
         return parseOcrResponse(response.body());
+    }
+
+    /**
+     * Otprema fajl OCR servisu i vraća prikaz prve strane (koristi se čim korisnik
+     * izabere fajl, pre pokretanja OCR analize). Server pamti poslednji otpremljeni
+     * fajl po sesiji (globalno stanje) — kasniji pozivi preuzmiStranu() rade nad njim.
+     */
+    public static OcrPrikaz preuzmiPrikaz(String putanjaFajla) throws Exception {
+        java.nio.file.Path filePath = Paths.get(putanjaFajla);
+        if (!Files.exists(filePath)) {
+            throw new Exception("Fajl nije pronađen: " + putanjaFajla);
+        }
+
+        byte[] fileBytes = Files.readAllBytes(filePath);
+        String fileName = filePath.getFileName().toString();
+        String mimeType = guessMimeType(fileName);
+        String boundary = "----OcrBoundary" + System.currentTimeMillis();
+        byte[] body = buildMultipartBody(boundary, fileBytes, fileName, mimeType, null);
+
+        HttpClient client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(RENDER_UPLOAD_URL))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .timeout(Duration.ofSeconds(60))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200) {
+            throw new Exception("Servis za prikaz vratio grešku " + response.statusCode() + ": " + response.body());
+        }
+
+        String json = response.body();
+        boolean isPdf = "true".equalsIgnoreCase(extractBoolean(json, "is_pdf"));
+        BufferedImage slika = dekodirajSliku(extractString(json, "image_data"));
+        return new OcrPrikaz(slika, isPdf, isPdf ? 2 : 1);
+    }
+
+    /**
+     * Vraća prikaz proizvoljne strane poslednjeg otpremljenog PDF-a (preuzmiPrikaz() mora
+     * biti pozvan bar jednom pre ovoga u istoj sesiji rada sa fajlom).
+     */
+    public static BufferedImage preuzmiStranu(int stranica) throws Exception {
+        HttpClient client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(RENDER_PAGE_URL + "?page=" + stranica))
+                .GET()
+                .timeout(Duration.ofSeconds(30))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200) {
+            throw new Exception("Servis za prikaz strane " + stranica + " vratio grešku "
+                    + response.statusCode() + ": " + response.body());
+        }
+
+        return dekodirajSliku(extractString(response.body(), "image_data"));
+    }
+
+    private static BufferedImage dekodirajSliku(String imageData) throws Exception {
+        if (imageData == null) return null;
+        String base64 = imageData;
+        int zarezPos = imageData.indexOf(',');
+        if (imageData.startsWith("data:") && zarezPos > 0) {
+            base64 = imageData.substring(zarezPos + 1);
+        }
+        byte[] bajtovi = Base64.getDecoder().decode(base64);
+        return ImageIO.read(new ByteArrayInputStream(bajtovi));
     }
 
     private static String trimZaLog(String s) {

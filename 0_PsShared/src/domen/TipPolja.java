@@ -19,10 +19,6 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
     private String nazivPolja;
     private tipPodatka tipPodatka;
     private String regexValidacija;
-    private int pozicijaX;
-    private int pozicijaY;
-    private int sirina;
-    private int visina;
     private int stranica;
     private int redosledObrade;
     private boolean podrzavaOCR;
@@ -31,15 +27,11 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
     public TipPolja() {
     }
 
-    public TipPolja(int idPolja, String nazivPolja, tipPodatka tipPodatka, String regexValidacija, int pozicijaX, int pozicijaY, int sirina, int visina, int stranica, int redosledObrade, boolean podrzavaOCR, boolean obaveznoPolje) {
+    public TipPolja(int idPolja, String nazivPolja, tipPodatka tipPodatka, String regexValidacija, int stranica, int redosledObrade, boolean podrzavaOCR, boolean obaveznoPolje) {
         this.idPolja = idPolja;
         this.nazivPolja = nazivPolja;
         this.tipPodatka = tipPodatka;
         this.regexValidacija = regexValidacija;
-        this.pozicijaX = pozicijaX;
-        this.pozicijaY = pozicijaY;
-        this.sirina = sirina;
-        this.visina = visina;
         this.stranica = stranica;
         this.redosledObrade = redosledObrade;
         this.podrzavaOCR = podrzavaOCR;
@@ -86,38 +78,6 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
         this.regexValidacija = regexValidacija;
     }
 
-    public int getPozicijaX() {
-        return pozicijaX;
-    }
-
-    public void setPozicijaX(int pozicijaX) {
-        this.pozicijaX = pozicijaX;
-    }
-
-    public int getPozicijaY() {
-        return pozicijaY;
-    }
-
-    public void setPozicijaY(int pozicijaY) {
-        this.pozicijaY = pozicijaY;
-    }
-
-    public int getSirina() {
-        return sirina;
-    }
-
-    public void setSirina(int sirina) {
-        this.sirina = sirina;
-    }
-
-    public int getVisina() {
-        return visina;
-    }
-
-    public void setVisina(int visina) {
-        this.visina = visina;
-    }
-
     public int getStranica() {
         return stranica;
     }
@@ -149,17 +109,10 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
 
     @Override
     public int hashCode() {
-        // Mora da bude konzistentan sa poljima koja equals() koristi (pozicija/dimenzije/OCR/regex/tip),
-        // inace se krsi hashCode/equals ugovor.
+        // Poslovni ključ je nazivPolja — jedino polje koje OCR uparivanje stvarno koristi
+        // (vidi SV20ObrazacController.pokreniOcr()) i koje mora biti stabilno po zapisu.
         int hash = 7;
-        hash = 31 * hash + this.pozicijaX;
-        hash = 31 * hash + this.pozicijaY;
-        hash = 31 * hash + this.sirina;
-        hash = 31 * hash + this.visina;
-        hash = 31 * hash + Boolean.hashCode(this.podrzavaOCR);
-        hash = 31 * hash + Boolean.hashCode(this.obaveznoPolje);
-        hash = 31 * hash + Objects.hashCode(this.regexValidacija);
-        hash = 31 * hash + Objects.hashCode(this.tipPodatka);
+        hash = 31 * hash + Objects.hashCode(this.nazivPolja);
         return hash;
     }
 
@@ -175,28 +128,7 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
             return false;
         }
         final TipPolja other = (TipPolja) obj;
-        if (this.pozicijaX != other.pozicijaX) {
-            return false;
-        }
-        if (this.pozicijaY != other.pozicijaY) {
-            return false;
-        }
-        if (this.sirina != other.sirina) {
-            return false;
-        }
-        if (this.visina != other.visina) {
-            return false;
-        }
-        if (this.podrzavaOCR != other.podrzavaOCR) {
-            return false;
-        }
-        if (this.obaveznoPolje != other.obaveznoPolje) {
-            return false;
-        }
-        if (!Objects.equals(this.regexValidacija, other.regexValidacija)) {
-            return false;
-        }
-        return this.tipPodatka == other.tipPodatka;
+        return Objects.equals(this.nazivPolja, other.nazivPolja);
     }
 
     @Override
@@ -215,20 +147,13 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiKoloneZaUbacivanje() {
-        return "nazivPolja, tipPodatka, regexValidacija, pozicijaX, pozicijaY, sirina, visina, stranica, redosledObrade, podrzavaOCR, obaveznoPolje";
+        return "nazivPolja, tipPodatka, regexValidacija, stranica, redosledObrade, podrzavaOCR, obaveznoPolje";
     }
 
     @Override
     public String vratiVrednostiZaUbacivanje() {
-        // pozicijaX/pozicijaY/sirina/visina su primitivni int i ne mogu direktno da nose NULL,
-        // ali baza (CHECK chk_tp_pozicije) zahteva da ova polja budu NULL kada podrzavaOCR=false.
-        // Zato se ovde eksplicitno salje NULL kad OCR nije podrzan, bez obzira na trenutnu int vrednost.
-        String pozicije = podrzavaOCR
-                ? pozicijaX + ", " + pozicijaY + ", " + sirina + ", " + visina
-                : "NULL, NULL, NULL, NULL";
         return "'" + nazivPolja + "', '" + tipPodatka.name() + "', "
                 + (regexValidacija != null ? "'" + regexValidacija + "'" : "NULL") + ", "
-                + pozicije + ", "
                 + stranica + ", " + redosledObrade + ", " + podrzavaOCR + ", " + obaveznoPolje;
     }
 
@@ -244,10 +169,6 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
         tp.setNazivPolja(rs.getString("nazivPolja"));
         tp.setTipPodatka(tipPodatka.valueOf(rs.getString("tipPodatka")));
         tp.setRegexValidacija(rs.getString("regexValidacija"));
-        tp.setPozicijaX(rs.getInt("pozicijaX"));
-        tp.setPozicijaY(rs.getInt("pozicijaY"));
-        tp.setSirina(rs.getInt("sirina"));
-        tp.setVisina(rs.getInt("visina"));
         tp.setStranica(rs.getInt("stranica"));
         tp.setRedosledObrade(rs.getInt("redosledObrade"));
         tp.setPodrzavaOCR(rs.getBoolean("podrzavaOCR"));
@@ -257,12 +178,9 @@ public class TipPolja implements ApstraktniDomenskiObjekat {
 
     @Override
     public String vratiVrednostiZaIzmenu() {
-        String pozicije = podrzavaOCR
-                ? "pozicijaX = " + pozicijaX + ", pozicijaY = " + pozicijaY + ", sirina = " + sirina + ", visina = " + visina
-                : "pozicijaX = NULL, pozicijaY = NULL, sirina = NULL, visina = NULL";
         return "nazivPolja = '" + nazivPolja + "', tipPodatka = '" + tipPodatka.name() + "', "
                 + "regexValidacija = " + (regexValidacija != null ? "'" + regexValidacija + "'" : "NULL") + ", "
-                + pozicije + ", stranica = " + stranica + ", "
+                + "stranica = " + stranica + ", "
                 + "redosledObrade = " + redosledObrade + ", podrzavaOCR = " + podrzavaOCR + ", obaveznoPolje = " + obaveznoPolje;
     }
 

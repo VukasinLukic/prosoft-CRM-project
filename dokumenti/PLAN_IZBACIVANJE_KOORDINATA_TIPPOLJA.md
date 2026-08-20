@@ -1,6 +1,12 @@
 # Plan: izbacivanje pozicionih kolona iz `TipPolja`
 
-**Status: NIJE URAĐENO — ovo je samo plan/dokumentacija, kod nije menjan.**
+**Status: URAĐENO u Java kodu i seed SQL-u.** Preostaje da se pokrene
+`dokumenti/MIGRACIJA_izbacivanje_pozicija_tippolja.sql` na živoj bazi (ručno,
+na mašini gde baza radi) — vidi taj fajl za tačan redosled i backup napomenu.
+
+Dodatno u odnosu na spisak ispod: i `0_PsServer/src/operacije/tippolja/KreirajTipPoljaOperacija.java`
+i `PromeniTipPoljaOperacija.java` su imali validaciju `sirina/visina > 0` koja nije bila
+pobrojana ovde — uklonjena je zajedno sa ostalim.
 
 ## Zašto
 

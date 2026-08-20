@@ -216,25 +216,19 @@ CREATE TABLE termindezurstva (
 );
 
 -- 4. TipPolja (nezavisan koncept, šifarnik)
+-- Napomena: pozicijaX/Y/sirina/visina su UKLONJENE (dokumenti/PLAN_IZBACIVANJE_KOORDINATA_TIPPOLJA.md,
+-- sprovedeno dokumenti/MIGRACIJA_izbacivanje_pozicija_tippolja.sql) — OCR koordinate žive isključivo
+-- u ocr-microservice/sv20-ocr-service/templates/sv20_template.json, ove kolone se nikad nisu čitale.
 CREATE TABLE tippolja (
     idPolja         INT AUTO_INCREMENT PRIMARY KEY,
     nazivPolja      VARCHAR(100) NOT NULL,
     tipPodatka      ENUM('TEXT','NUMERIC','ALPHANUMERIC','DATE','BOOLEAN') NOT NULL,
     regexValidacija VARCHAR(255) NULL,
-    pozicijaX       INT NULL,
-    pozicijaY       INT NULL,
-    sirina          INT NULL,
-    visina          INT NULL,
     stranica        INT NOT NULL DEFAULT 1,
     redosledObrade  INT NULL,
     podrzavaOCR     BOOLEAN NOT NULL DEFAULT TRUE,
     obaveznoPolje   BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT chk_tp_stranica CHECK (stranica >= 1),
-    CONSTRAINT chk_tp_pozicije CHECK (
-        (podrzavaOCR = TRUE  AND pozicijaX IS NOT NULL AND pozicijaY IS NOT NULL AND sirina > 0 AND visina > 0)
-        OR
-        (podrzavaOCR = FALSE AND pozicijaX IS NULL AND pozicijaY IS NULL AND sirina IS NULL AND visina IS NULL)
-    ),
     CONSTRAINT chk_tp_regex CHECK (tipPodatka <> 'NUMERIC' OR regexValidacija REGEXP '^[0-9]+$')
     -- "ako je obaveznoPolje=TRUE i obrazac.status='Odobren' onda stavka mora imati vrednost"
     -- -> cross-table, proveri u preduslovi() operacije PromeniSV20Obrazac / PromeniStavkuObrasca

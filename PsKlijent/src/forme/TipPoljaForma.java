@@ -9,10 +9,6 @@ public class TipPoljaForma extends JDialog {
 
     private JTextField txtNazivPolja;
     private JTextField txtRegexValidacija;
-    private JTextField txtVisina;
-    private JTextField txtSirina;
-    private JTextField txtPozicijaX;
-    private JTextField txtPozicijaY;
     private JComboBox cmbTipPodatka;
     private JSpinner spnStranica;
     private JSpinner spnRedosledObrade;
@@ -45,10 +41,6 @@ public class TipPoljaForma extends JDialog {
 
         txtNazivPolja = new JTextField(); txtNazivPolja.setPreferredSize(new Dimension(200, 28));
         txtRegexValidacija = new JTextField(); txtRegexValidacija.setPreferredSize(new Dimension(200, 28));
-        txtVisina = new JTextField(); txtVisina.setPreferredSize(new Dimension(90, 28));
-        txtSirina = new JTextField(); txtSirina.setPreferredSize(new Dimension(90, 28));
-        txtPozicijaX = new JTextField(); txtPozicijaX.setPreferredSize(new Dimension(90, 28));
-        txtPozicijaY = new JTextField(); txtPozicijaY.setPreferredSize(new Dimension(90, 28));
         cmbTipPodatka = new JComboBox();
         cmbTipPodatka.setPreferredSize(new Dimension(200, 28));
         spnStranica = new JSpinner(new SpinnerNumberModel(1, 1, 10, 1));
@@ -76,14 +68,10 @@ public class TipPoljaForma extends JDialog {
 
         // Row 0: naziv + tip podatka
         addRow2(formPanel, g, 0, "Naziv polja:", txtNazivPolja, "Tip podatka:", cmbTipPodatka);
-        // Row 2: regex + pozicija X
-        addRow2(formPanel, g, 2, "Regex validacija:", txtRegexValidacija, "Pozicija X:", txtPozicijaX);
-        // Row 4: pozicija Y + širina
-        addRow2(formPanel, g, 4, "Pozicija Y:", txtPozicijaY, "Širina:", txtSirina);
-        // Row 6: visina + stranica
-        addRow2(formPanel, g, 6, "Visina:", txtVisina, "Stranica:", spnStranica);
-        // Row 8: redosled + checkboxes
-        g.gridx = 0; g.gridy = 8; g.fill = GridBagConstraints.NONE;
+        // Row 2: regex + stranica
+        addRow2(formPanel, g, 2, "Regex validacija:", txtRegexValidacija, "Stranica:", spnStranica);
+        // Row 4: redosled + checkboxes
+        g.gridx = 0; g.gridy = 4; g.fill = GridBagConstraints.NONE;
         formPanel.add(new JLabel("Redosled obrade:"), g);
         g.gridx = 1; g.fill = GridBagConstraints.HORIZONTAL;
         formPanel.add(spnRedosledObrade, g);
@@ -159,10 +147,6 @@ public class TipPoljaForma extends JDialog {
     public JTextField getTxtNazivPolja() { return txtNazivPolja; }
     public JComboBox<domen.tipPodatka> getCmbTipPodatka() { return cmbTipPodatka; }
     public JTextField getTxtRegexValidacija() { return txtRegexValidacija; }
-    public JTextField getTxtPozicijaX() { return txtPozicijaX; }
-    public JTextField getTxtPozicijaY() { return txtPozicijaY; }
-    public JTextField getTxtSirina() { return txtSirina; }
-    public JTextField getTxtVisina() { return txtVisina; }
     public JSpinner getSpnStranica() { return spnStranica; }
     public JSpinner getSpnRedosledObrade() { return spnRedosledObrade; }
     public JCheckBox getChkPodrzavaOCR() { return chkPodrzavaOCR; }

@@ -175,16 +175,6 @@ public class TipPoljaController {
         String naziv = forma.getTxtNazivPolja().getText().trim();
         tipPodatka tip = (tipPodatka) forma.getCmbTipPodatka().getSelectedItem();
         String regex = forma.getTxtRegexValidacija().getText().trim();
-        int pozX = 0;
-        int pozY = 0;
-        int sirina = 0;
-        int visina = 0;
-        try {
-            pozX = Integer.parseInt(forma.getTxtPozicijaX().getText().trim());
-            pozY = Integer.parseInt(forma.getTxtPozicijaY().getText().trim());
-            sirina = Integer.parseInt(forma.getTxtSirina().getText().trim());
-            visina = Integer.parseInt(forma.getTxtVisina().getText().trim());
-        } catch (NumberFormatException ex) {}
         int stranica = (int) forma.getSpnStranica().getValue();
         int redosled = (int) forma.getSpnRedosledObrade().getValue();
         boolean podrzavaOCR = forma.getChkPodrzavaOCR().isSelected();
@@ -200,10 +190,6 @@ public class TipPoljaController {
         tp.setNazivPolja(naziv);
         tp.setTipPodatka(tip);
         tp.setRegexValidacija(regex.isEmpty() ? null : regex);
-        tp.setPozicijaX(pozX);
-        tp.setPozicijaY(pozY);
-        tp.setSirina(sirina);
-        tp.setVisina(visina);
         tp.setStranica(stranica);
         tp.setRedosledObrade(redosled);
         tp.setPodrzavaOCR(podrzavaOCR);
@@ -216,10 +202,6 @@ public class TipPoljaController {
         forma.getTxtNazivPolja().setText("");
         forma.getCmbTipPodatka().setSelectedIndex(0);
         forma.getTxtRegexValidacija().setText("");
-        forma.getTxtPozicijaX().setText("0");
-        forma.getTxtPozicijaY().setText("0");
-        forma.getTxtSirina().setText("0");
-        forma.getTxtVisina().setText("0");
         forma.getSpnStranica().setValue(1);
         forma.getSpnRedosledObrade().setValue(0);
         forma.getChkPodrzavaOCR().setSelected(true);
