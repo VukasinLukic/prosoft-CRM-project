@@ -23,139 +23,126 @@ public class GlavnaFormaController {
 
     private final GlavnaForma gf;
 
+    // Svaki ekran se pravi jednom (lenjo, pri prvoj poseti) i posle se samo prikazuje —
+    // navigacija nikad ne otvara nov prozor niti ponovo učitava podatke sa servera.
+    private boolean obrasciOtvoreni;
+    private boolean studentiOtvoreni;
+    private boolean zaposleniOtvoreni;
+    private boolean studijskiProgramOtvoren;
+    private boolean terminiOtvoreni;
+    private boolean tipoviPoljaOtvoreni;
+
     public GlavnaFormaController(GlavnaForma gf) {
         this.gf = gf;
         addActionListeners();
+        // Prva stranica po ulasku u aplikaciju je direktno upravljanje ŠV-20 obrascima —
+        // nema posebne "meni" stranice pre toga.
+        otvoriSV20Obrazac();
     }
 
     private void addActionListeners() {
 
         gf.addSV20ObrazacListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriSV20Obrazac();
-            }
+            @Override public void actionPerformed(ActionEvent e) { otvoriSV20Obrazac(); }
         });
 
         gf.addStudentListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriStudent();
-            }
+            @Override public void actionPerformed(ActionEvent e) { otvoriStudent(); }
         });
 
         gf.addZaposleniListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriZaposleni();
-            }
+            @Override public void actionPerformed(ActionEvent e) { otvoriZaposleni(); }
         });
 
         gf.addStudijskiProgramListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriStudijskiProgram();
-            }
+            @Override public void actionPerformed(ActionEvent e) { otvoriStudijskiProgram(); }
         });
 
         gf.addTerminDezurstvaListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriTerminDezurstva();
-            }
+            @Override public void actionPerformed(ActionEvent e) { otvoriTerminDezurstva(); }
         });
 
         gf.addTipPoljaListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriTipPolja();
-            }
+            @Override public void actionPerformed(ActionEvent e) { otvoriTipPolja(); }
         });
 
         gf.addPodesavanjaListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                podesavanja();
-            }
+            @Override public void actionPerformed(ActionEvent e) { podesavanja(); }
         });
 
         gf.addOdjavaListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                odjava();
-            }
+            @Override public void actionPerformed(ActionEvent e) { odjava(); }
         });
 
         gf.addOProgramuListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                oProgramu();
-            }
-        });
-
-        gf.addBtnObrasciListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriSV20Obrazac();
-            }
-        });
-
-        gf.addBtnStudentiListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriStudent();
-            }
-        });
-
-        gf.addBtnZaposleniListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriZaposleni();
-            }
-        });
-
-        gf.addBtnSifarniciListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                otvoriStudijskiProgram();
-            }
+            @Override public void actionPerformed(ActionEvent e) { oProgramu(); }
         });
     }
 
     private void otvoriSV20Obrazac() {
-        SV20ObrazacForma forma = new SV20ObrazacForma(gf);
-        new SV20ObrazacController(forma);
-        forma.setVisible(true);
+        if (!obrasciOtvoreni) {
+            SV20ObrazacForma forma = new SV20ObrazacForma();
+            new SV20ObrazacController(forma);
+            gf.registrujIPrikaziEkran(GlavnaForma.EKRAN_OBRASCI, forma);
+            obrasciOtvoreni = true;
+        } else {
+            gf.prikaziEkran(GlavnaForma.EKRAN_OBRASCI);
+        }
     }
 
     private void otvoriStudent() {
-        StudentForma forma = new StudentForma(gf);
-        new StudentController(forma);
-        forma.setVisible(true);
+        if (!studentiOtvoreni) {
+            StudentForma forma = new StudentForma();
+            new StudentController(forma);
+            gf.registrujIPrikaziEkran(GlavnaForma.EKRAN_STUDENTI, forma);
+            studentiOtvoreni = true;
+        } else {
+            gf.prikaziEkran(GlavnaForma.EKRAN_STUDENTI);
+        }
     }
 
     private void otvoriZaposleni() {
-        ZaposleniForma forma = new ZaposleniForma(gf);
-        new ZaposleniController(forma);
-        forma.setVisible(true);
+        if (!zaposleniOtvoreni) {
+            ZaposleniForma forma = new ZaposleniForma();
+            new ZaposleniController(forma);
+            gf.registrujIPrikaziEkran(GlavnaForma.EKRAN_ZAPOSLENI, forma);
+            zaposleniOtvoreni = true;
+        } else {
+            gf.prikaziEkran(GlavnaForma.EKRAN_ZAPOSLENI);
+        }
     }
 
     private void otvoriStudijskiProgram() {
-        StudijskiProgramForma forma = new StudijskiProgramForma(gf);
-        new StudijskiProgramController(forma);
-        forma.setVisible(true);
+        if (!studijskiProgramOtvoren) {
+            StudijskiProgramForma forma = new StudijskiProgramForma();
+            new StudijskiProgramController(forma);
+            gf.registrujIPrikaziEkran(GlavnaForma.EKRAN_STUDIJSKI_PROGRAM, forma);
+            studijskiProgramOtvoren = true;
+        } else {
+            gf.prikaziEkran(GlavnaForma.EKRAN_STUDIJSKI_PROGRAM);
+        }
     }
 
     private void otvoriTerminDezurstva() {
-        TerminDezurstvaForma forma = new TerminDezurstvaForma(gf);
-        new TerminDezurstvaController(forma);
-        forma.setVisible(true);
+        if (!terminiOtvoreni) {
+            TerminDezurstvaForma forma = new TerminDezurstvaForma();
+            new TerminDezurstvaController(forma);
+            gf.registrujIPrikaziEkran(GlavnaForma.EKRAN_TERMINI, forma);
+            terminiOtvoreni = true;
+        } else {
+            gf.prikaziEkran(GlavnaForma.EKRAN_TERMINI);
+        }
     }
 
     private void otvoriTipPolja() {
-        TipPoljaForma forma = new TipPoljaForma(gf);
-        new TipPoljaController(forma);
-        forma.setVisible(true);
+        if (!tipoviPoljaOtvoreni) {
+            TipPoljaForma forma = new TipPoljaForma();
+            new TipPoljaController(forma);
+            gf.registrujIPrikaziEkran(GlavnaForma.EKRAN_TIPOVI_POLJA, forma);
+            tipoviPoljaOtvoreni = true;
+        } else {
+            gf.prikaziEkran(GlavnaForma.EKRAN_TIPOVI_POLJA);
+        }
     }
 
     private void podesavanja() {

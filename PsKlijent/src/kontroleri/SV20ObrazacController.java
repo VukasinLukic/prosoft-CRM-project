@@ -162,6 +162,7 @@ public class SV20ObrazacController {
     private void ucitajPodatke() {
         try {
             List<SV20Obrazac> lista = Komunikacija.getInstanca().vratiListuSV20Obrazaca("");
+            sortirajNajnovijePrvo(lista);
             ucitaniObrasci = lista;
             DefaultTableModel model = forma.getTableModelObrasci();
             model.setRowCount(0);
@@ -172,6 +173,11 @@ public class SV20ObrazacController {
             JOptionPane.showMessageDialog(forma, "Greska pri ucitavanju: " + ex.getMessage(),
                     "Greska", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    /** Najnoviji obrazac (najveći ID) na vrhu liste. */
+    private void sortirajNajnovijePrvo(List<SV20Obrazac> lista) {
+        lista.sort(Comparator.comparingInt(SV20Obrazac::getIdObrazac).reversed());
     }
 
     private Object[] buildRow(SV20Obrazac o) {
@@ -230,10 +236,12 @@ public class SV20ObrazacController {
 
             Komunikacija.getInstanca().kreirajSV20Obrazac(o);
 
-            JOptionPane.showMessageDialog(forma, "Sistem je zapamtio SV-20 obrazac.",
-                    "Uspeh", JOptionPane.INFORMATION_MESSAGE);
-            ocisti();
+            // Osveži listu (najnoviji je na vrhu) i odmah ga selektuj — korisnik može
+            // da klikne "Obradi OCR" bez dodatnog koraka "izaberi red iz tabele".
             ucitajPodatke();
+            if (forma.getTableModelObrasci().getRowCount() > 0) {
+                forma.getTblObrasci().setRowSelectionInterval(0, 0);
+            }
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(forma, "Sistem ne moze da zapamti SV-20 obrazac: " + ex.getMessage(),
@@ -267,7 +275,6 @@ public class SV20ObrazacController {
             Komunikacija.getInstanca().promeniSV20Obrazac(o);
 
             JOptionPane.showMessageDialog(forma, "Sistem je zapamtio SV-20 obrazac.", "Uspeh", JOptionPane.INFORMATION_MESSAGE);
-            ocisti();
             ucitajPodatke();
 
         } catch (Exception ex) {
@@ -314,6 +321,7 @@ public class SV20ObrazacController {
             }
 
             List<SV20Obrazac> lista = Komunikacija.getInstanca().vratiListuSV20Obrazaca(kriterijum);
+            sortirajNajnovijePrvo(lista);
             ucitaniObrasci = lista;
             DefaultTableModel model = forma.getTableModelObrasci();
             model.setRowCount(0);
@@ -322,9 +330,6 @@ public class SV20ObrazacController {
             if (lista.isEmpty()) {
                 JOptionPane.showMessageDialog(forma, "Sistem ne moze da nadje SV-20 obrasce po zadatim kriterijumima.",
                         "Informacija", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(forma, "Sistem je nasao " + lista.size() + " obrazac(a).",
-                        "Uspeh", JOptionPane.INFORMATION_MESSAGE);
             }
 
         } catch (Exception ex) {
@@ -407,6 +412,7 @@ public class SV20ObrazacController {
 
     private void okreniStranuPregleda(int nova) {
         if (nova < 1 || nova > maxStranaPregled) return;
+        sinhronizujTrenutnuStranicu();
         SwingWorker<java.awt.image.BufferedImage, Void> worker = new SwingWorker<java.awt.image.BufferedImage, Void>() {
             @Override protected java.awt.image.BufferedImage doInBackground() throws Exception {
                 return ocr.OcrKlijent.preuzmiStranu(nova);
@@ -418,6 +424,7 @@ public class SV20ObrazacController {
                     forma.getLblStranaPregled().setText("Strana " + stranaPregled + " od " + maxStranaPregled);
                     forma.getBtnPrethodnaStranaPregled().setEnabled(stranaPregled > 1);
                     forma.getBtnSledecaStranaPregled().setEnabled(stranaPregled < maxStranaPregled);
+                    forma.prikaziStavke(stavkeZaStranu(stranaPregled), stranaPregled);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(forma, "Ne mogu da učitam stranu " + nova + ": " + ex.getMessage(),
                             "Greška", JOptionPane.ERROR_MESSAGE);
@@ -457,6 +464,12 @@ public class SV20ObrazacController {
                 o.setIdObrazac(obrazac.getIdObrazac());
                 kriterijum.setIdObrazac(o);
                 List<StavkeObrasca> stavke = Komunikacija.getInstanca().pretraziStavkeObrasca(kriterijum);
+
+                // Generički broker (bez JOIN-a) vraća idPolja kao "patrljak" (samo ID, bez
+                // naziva/stranice/redosleda) — bez ovoga polja u pregledu nemaju labelu
+                // i sva ispadnu pod "Strana 0".
+                obogatiTipPoljaPodacima(stavke, Komunikacija.getInstanca().vratiSveTipovePolja());
+
                 stavke.sort(Comparator.comparingInt(
                         (StavkeObrasca s) -> s.getIdPolja() != null ? s.getIdPolja().getStranica() : 1)
                         .thenComparingInt(s -> s.getIdPolja() != null ? s.getIdPolja().getRedosledObrade() : 0));
@@ -489,7 +502,7 @@ public class SV20ObrazacController {
                     forma.getBtnPrethodnaStranaPregled().setEnabled(false);
                     forma.getBtnSledecaStranaPregled().setEnabled(maxStranaPregled > 1);
 
-                    forma.prikaziStavke(stavke);
+                    forma.prikaziStavke(stavkeZaStranu(1), 1);
                     forma.getLblSazetakPregled().setText(sazetakStavki(stavke));
                     forma.prikaziKarticu(SV20ObrazacForma.KARTICA_PREGLED);
 
@@ -505,6 +518,40 @@ public class SV20ObrazacController {
         worker.execute();
     }
 
+    private static void obogatiTipPoljaPodacima(List<StavkeObrasca> stavke, List<TipPolja> tipoviPolja) {
+        Map<Integer, TipPolja> poId = new HashMap<>();
+        for (TipPolja tp : tipoviPolja) { poId.put(tp.getIdPolja(), tp); }
+        for (StavkeObrasca s : stavke) {
+            if (s.getIdPolja() != null) {
+                TipPolja pun = poId.get(s.getIdPolja().getIdPolja());
+                if (pun != null) { s.setIdPolja(pun); }
+            }
+        }
+    }
+
+    private List<StavkeObrasca> stavkeZaStranu(int strana) {
+        List<StavkeObrasca> rezultat = new ArrayList<>();
+        for (StavkeObrasca s : stavkeUPregledu) {
+            int st = s.getIdPolja() != null ? s.getIdPolja().getStranica() : 1;
+            if (st == strana) { rezultat.add(s); }
+        }
+        return rezultat;
+    }
+
+    /** Upisuje trenutno vidljive (nesačuvane) korekcije iz forme nazad u stavkeUPregledu,
+     *  pre nego što se strana promeni ili stavke sačuvaju u bazu — inače bi se izmene na
+     *  jednoj strani izgubile čim korisnik ode na drugu. */
+    private void sinhronizujTrenutnuStranicu() {
+        Map<Integer, JTextField> polja = forma.getPoljaZaKorekciju();
+        for (StavkeObrasca s : stavkeUPregledu) {
+            JTextField txt = polja.get(s.getIdStavke());
+            if (txt != null) {
+                String nova = txt.getText().trim();
+                s.setKorigovanaVrednost(nova.isEmpty() ? null : nova);
+            }
+        }
+    }
+
     private String sazetakStavki(List<StavkeObrasca> stavke) {
         int pouzdano = 0, zaProveru = 0, nijePrepoznato = 0;
         for (StavkeObrasca s : stavke) {
@@ -518,13 +565,9 @@ public class SV20ObrazacController {
     }
 
     private void sacuvajStavke() {
-        Map<Integer, JTextField> polja = forma.getPoljaZaKorekciju();
+        sinhronizujTrenutnuStranicu();
         int sacuvano = 0, greske = 0;
         for (StavkeObrasca s : stavkeUPregledu) {
-            JTextField txt = polja.get(s.getIdStavke());
-            if (txt == null) continue;
-            String nova = txt.getText().trim();
-            s.setKorigovanaVrednost(nova.isEmpty() ? null : nova);
             try {
                 Komunikacija.getInstanca().promeniStavkuObrasca(s);
                 sacuvano++;

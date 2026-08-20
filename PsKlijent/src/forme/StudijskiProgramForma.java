@@ -5,7 +5,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
 
-public class StudijskiProgramForma extends JDialog {
+public class StudijskiProgramForma extends JPanel {
 
     private JTextField txtNaziv;
     private JTextField txtOznaka;
@@ -25,15 +25,8 @@ public class StudijskiProgramForma extends JDialog {
         initCustomTableModel();
     }
 
-    public StudijskiProgramForma(java.awt.Frame parent) {
-        super(parent, true);
-        initComponents();
-        initCustomTableModel();
-    }
-
     private void initComponents() {
-        setTitle("Upravljanje Studijskim Programima");
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setBackground(Color.WHITE);
 
         txtNaziv = new JTextField(); txtNaziv.setPreferredSize(new Dimension(320, 28));
         txtOznaka = new JTextField(); txtOznaka.setPreferredSize(new Dimension(160, 28));
@@ -90,6 +83,7 @@ public class StudijskiProgramForma extends JDialog {
 
         JPanel topGroup = new JPanel(new BorderLayout(0, 4));
         topGroup.setBorder(new EmptyBorder(4, 4, 4, 4));
+        topGroup.add(naslovPanel("Upravljanje studijskim programima"), BorderLayout.NORTH);
         topGroup.add(formPanel, BorderLayout.CENTER);
 
         setLayout(new BorderLayout(4, 4));
@@ -98,7 +92,14 @@ public class StudijskiProgramForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        FormeUtil.otvoriPunEkran(this);
+    }
+
+    private JComponent naslovPanel(String tekst) {
+        JLabel naslov = new JLabel(tekst);
+        naslov.setFont(new Font("SansSerif", Font.BOLD, 18));
+        naslov.setForeground(new Color(38, 70, 110));
+        naslov.setBorder(new EmptyBorder(2, 2, 10, 2));
+        return naslov;
     }
 
     private void cmbStepenStudijaActionPerformed(java.awt.event.ActionEvent evt) {}

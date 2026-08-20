@@ -5,7 +5,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
 
-public class StudentForma extends JDialog {
+public class StudentForma extends JPanel {
 
     private JTextField txtJmbg;
     private JTextField txtIndeks;
@@ -27,20 +27,13 @@ public class StudentForma extends JDialog {
     private DefaultTableModel tableModel;
     private domen.Student selektovani;
 
-    public StudentForma(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
-        initComponents();
-    }
-
-    public StudentForma(java.awt.Frame parent) {
-        super(parent, true);
+    public StudentForma() {
         initComponents();
         initCustomTableModel();
     }
 
     private void initComponents() {
-        setTitle("Upravljanje Studentima");
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setBackground(Color.WHITE);
 
         // Components
         txtIndeks = new JTextField(); txtIndeks.setPreferredSize(new Dimension(130, 28));
@@ -106,8 +99,9 @@ public class StudentForma extends JDialog {
         // ── Top group ────────────────────────────────────────────────────────
         JPanel topGroup = new JPanel(new BorderLayout(0, 4));
         topGroup.setBorder(new EmptyBorder(4, 4, 4, 4));
-        topGroup.add(searchPanel, BorderLayout.NORTH);
-        topGroup.add(formPanel, BorderLayout.CENTER);
+        topGroup.add(naslovPanel("Upravljanje studentima"), BorderLayout.NORTH);
+        topGroup.add(searchPanel, BorderLayout.CENTER);
+        topGroup.add(formPanel, BorderLayout.SOUTH);
 
         // ── Main layout ──────────────────────────────────────────────────────
         setLayout(new BorderLayout(4, 4));
@@ -116,7 +110,14 @@ public class StudentForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        FormeUtil.otvoriPunEkran(this);
+    }
+
+    private JComponent naslovPanel(String tekst) {
+        JLabel naslov = new JLabel(tekst);
+        naslov.setFont(new Font("SansSerif", Font.BOLD, 18));
+        naslov.setForeground(new Color(38, 70, 110));
+        naslov.setBorder(new EmptyBorder(2, 2, 10, 2));
+        return naslov;
     }
 
     private void addRow(JPanel panel, GridBagConstraints g, int startX, int startY,

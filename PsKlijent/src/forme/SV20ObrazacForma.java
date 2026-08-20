@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-public class SV20ObrazacForma extends JDialog {
+public class SV20ObrazacForma extends JPanel {
 
     // ── Kartica "Lista/unos" ─────────────────────────────────────────────────
     private JComboBox cmbStudent;
@@ -43,6 +44,7 @@ public class SV20ObrazacForma extends JDialog {
     private JButton btnSledecaStranaPregled;
     private JLabel lblSazetakPregled;
     private JPanel pnlStavke;
+    private JPanel poljaPanel;
     private JButton btnNazad;
     private JButton btnSacuvajStavke;
     private JButton btnPonoviOcr;
@@ -64,21 +66,12 @@ public class SV20ObrazacForma extends JDialog {
     public static final String KARTICA_LISTA = "LISTA";
     public static final String KARTICA_PREGLED = "PREGLED";
 
-    public SV20ObrazacForma(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
+    public SV20ObrazacForma() {
         initComponents();
-    }
-
-    public SV20ObrazacForma(java.awt.Frame parent) {
-        super(parent, true);
-        initComponents();
-        initCustomTableModels();
     }
 
     private void initComponents() {
-        setTitle("Upravljanje ŠV-20 Obrascima");
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        getContentPane().setBackground(Color.WHITE);
+        setBackground(Color.WHITE);
 
         cardLayout = new CardLayout();
         cardsPanel = new JPanel(cardLayout);
@@ -90,8 +83,6 @@ public class SV20ObrazacForma extends JDialog {
         add(cardsPanel, BorderLayout.CENTER);
 
         initCustomTableModels();
-        setSize(1220, 900);
-        setLocationRelativeTo(null);
     }
 
     public void prikaziKarticu(String naziv) {
@@ -114,26 +105,16 @@ public class SV20ObrazacForma extends JDialog {
         tblObrasci = new JTable();
         jScrollPane1 = new JScrollPane(tblObrasci);
 
-        btnOdaberiFajl = dugme("Odaberi fajl...", new Color(97, 97, 97));
-        btnDodaj = dugme("Dodaj", new Color(38, 70, 110));
-        btnSacuvaj = dugme("Sačuvaj", OK);
-        btnObrisi = dugme("Obriši", BAD);
-        btnOcisti = dugme("Očisti", new Color(97, 97, 97));
-        btnPretrazi = dugme("Pretraži", new Color(38, 70, 110));
+        btnOdaberiFajl = dugme("Odaberi fajl...", new Color(97, 97, 97), false);
+        btnDodaj = dugme("Dodaj obrazac", new Color(38, 70, 110), true);
+        btnSacuvaj = dugme("Sačuvaj izmene", OK, true);
+        btnObrisi = dugme("Obriši", BAD, false);
+        btnOcisti = ghostDugme("Očisti formu");
+        btnPretrazi = dugme("Pretraži", new Color(38, 70, 110), false);
 
-        btnPokreniOcr = dugme("Obradi OCR", new Color(180, 90, 20));
-        btnPokreniOcr.setPreferredSize(new Dimension(160, 34));
+        btnPokreniOcr = dugme("Obradi OCR", new Color(180, 90, 20), true);
+        btnPokreniOcr.setPreferredSize(new Dimension(170, 36));
         btnPokreniOcr.setToolTipText("Šalje ceo fajl (obe strane) OCR servisu i otvara pregled za korekciju");
-
-        // ── Pretraga ─────────────────────────────────────────────────────────
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
-        searchPanel.setBackground(Color.WHITE);
-        searchPanel.setBorder(naslovljenaIvica("Pretraga obrazaca"));
-        searchPanel.add(new JLabel("Kriterijum:"));
-        searchPanel.add(cmbKriterijum);
-        txtPretraga.setPreferredSize(new Dimension(340, 28));
-        searchPanel.add(txtPretraga);
-        searchPanel.add(btnPretrazi);
 
         // ── Podaci o obrascu ─────────────────────────────────────────────────
         JPanel formPanel = new JPanel(new GridBagLayout());
@@ -191,10 +172,10 @@ public class SV20ObrazacForma extends JDialog {
 
         JPanel crudPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         crudPanel.setBackground(Color.WHITE);
-        crudPanel.add(btnOcisti);
-        crudPanel.add(btnObrisi);
-        crudPanel.add(btnSacuvaj);
         crudPanel.add(btnDodaj);
+        crudPanel.add(btnSacuvaj);
+        crudPanel.add(btnObrisi);
+        crudPanel.add(btnOcisti);
 
         JPanel formWithButtons = new JPanel(new BorderLayout(0, 4));
         formWithButtons.setBackground(Color.WHITE);
@@ -235,11 +216,21 @@ public class SV20ObrazacForma extends JDialog {
         k1Grid.add(formWithButtons);
         k1Grid.add(previewPanel);
 
+        // ── Pretraga — direktno iznad liste obrazaca ─────────────────────────
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        searchPanel.setBackground(Color.WHITE);
+        searchPanel.add(new JLabel("Pretraži po:"));
+        searchPanel.add(cmbKriterijum);
+        txtPretraga.setPreferredSize(new Dimension(300, 28));
+        searchPanel.add(txtPretraga);
+        searchPanel.add(btnPretrazi);
+
         // ── Lista obrazaca ───────────────────────────────────────────────────
-        JPanel obrazaciPanel = new JPanel(new BorderLayout());
+        JPanel obrazaciPanel = new JPanel(new BorderLayout(0, 4));
         obrazaciPanel.setBackground(Color.WHITE);
-        obrazaciPanel.setBorder(naslovljenaIvica("Lista obrazaca  (dvostruki klik = otvori OCR pregled)"));
+        obrazaciPanel.setBorder(naslovljenaIvica("Lista obrazaca  (najnoviji prvi · dvostruki klik = otvori OCR pregled)"));
         jScrollPane1.setPreferredSize(new Dimension(1100, 260));
+        obrazaciPanel.add(searchPanel, BorderLayout.NORTH);
         obrazaciPanel.add(jScrollPane1, BorderLayout.CENTER);
 
         // ── Sažetak stavki (zamenjuje staru tabelu stavki) ───────────────────
@@ -250,18 +241,18 @@ public class SV20ObrazacForma extends JDialog {
                 new EmptyBorder(10, 12, 10, 12)));
         lblSazetakStavki = new JLabel("Izaberite obrazac iz liste da vidite OCR stavke.");
         lblSazetakStavki.setForeground(TEXT_MUTED);
-        btnPregledajStavke = dugme("Pregledaj OCR stavke", new Color(38, 70, 110));
+        btnPregledajStavke = dugme("Pregledaj OCR stavke", new Color(38, 70, 110), false);
         btnPregledajStavke.setEnabled(false);
         summaryPanel.add(lblSazetakStavki, BorderLayout.CENTER);
         summaryPanel.add(btnPregledajStavke, BorderLayout.EAST);
 
         JPanel kartica = new JPanel(new BorderLayout(4, 8));
         kartica.setBackground(Color.WHITE);
-        kartica.setBorder(new EmptyBorder(8, 8, 8, 8));
+        kartica.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JPanel gornjiDeo = new JPanel(new BorderLayout(0, 8));
+        JPanel gornjiDeo = new JPanel(new BorderLayout(0, 10));
         gornjiDeo.setBackground(Color.WHITE);
-        gornjiDeo.add(searchPanel, BorderLayout.NORTH);
+        gornjiDeo.add(naslov("Upravljanje ŠV-20 obrascima"), BorderLayout.NORTH);
         gornjiDeo.add(k1Grid, BorderLayout.CENTER);
 
         JPanel donjiDeo = new JPanel(new BorderLayout(0, 8));
@@ -270,7 +261,7 @@ public class SV20ObrazacForma extends JDialog {
         donjiDeo.add(summaryPanel, BorderLayout.SOUTH);
 
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, gornjiDeo, donjiDeo);
-        split.setDividerLocation(430);
+        split.setDividerLocation(440);
         split.setResizeWeight(0.55);
         split.setBorder(null);
 
@@ -283,7 +274,7 @@ public class SV20ObrazacForma extends JDialog {
     private JPanel izgradiKarticuPregleda() {
         JPanel kartica = new JPanel(new BorderLayout(0, 8));
         kartica.setBackground(Color.WHITE);
-        kartica.setBorder(new EmptyBorder(8, 8, 8, 8));
+        kartica.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         lblSazetakPregled = new JLabel(" ");
         lblSazetakPregled.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -316,10 +307,10 @@ public class SV20ObrazacForma extends JDialog {
         slikaPanel.add(slikaScroll, BorderLayout.CENTER);
         slikaPanel.add(flipPanel, BorderLayout.SOUTH);
 
-        // ── Polja (desno) ────────────────────────────────────────────────────
-        JPanel poljaPanel = new JPanel(new BorderLayout());
+        // ── Polja (desno) — samo polja trenutno prikazane strane ────────────
+        poljaPanel = new JPanel(new BorderLayout());
         poljaPanel.setBackground(Color.WHITE);
-        poljaPanel.setBorder(naslovljenaIvica("Prepoznata polja — koriguj po potrebi"));
+        poljaPanel.setBorder(naslovljenaIvica("Prepoznata polja — strana 1"));
 
         pnlStavke = new JPanel();
         pnlStavke.setBackground(Color.WHITE);
@@ -335,10 +326,9 @@ public class SV20ObrazacForma extends JDialog {
         split.add(poljaPanel, BorderLayout.CENTER);
 
         // ── Dugmad ───────────────────────────────────────────────────────────
-        btnNazad = dugme("Nazad na obrazac", new Color(97, 97, 97));
-        btnPonoviOcr = dugme("Ponovi OCR", new Color(150, 150, 150));
-        btnPonoviOcr.setPreferredSize(new Dimension(120, 28));
-        btnSacuvajStavke = dugme("Sačuvaj stavke", OK);
+        btnNazad = ghostDugme("‹ Nazad na obrazac");
+        btnPonoviOcr = ghostDugme("Ponovi OCR");
+        btnSacuvajStavke = dugme("Sačuvaj stavke", OK, true);
 
         JPanel akcijePanel = new JPanel(new BorderLayout());
         akcijePanel.setBackground(Color.WHITE);
@@ -361,33 +351,17 @@ public class SV20ObrazacForma extends JDialog {
         return kartica;
     }
 
-    public void prikaziStavke(List<domen.StavkeObrasca> stavke) {
+    /** Prikazuje SAMO polja trenutno izabrane strane (lista je već filtrirana od strane kontrolera). */
+    public void prikaziStavke(List<domen.StavkeObrasca> stavkeZaStranu, int strana) {
+        poljaPanel.setBorder(naslovljenaIvica("Prepoznata polja — strana " + strana));
         pnlStavke.removeAll();
         poljaZaKorekciju.clear();
-        int trenutnaStrana = -1;
-        for (domen.StavkeObrasca s : stavke) {
-            int strana = s.getIdPolja() != null ? s.getIdPolja().getStranica() : 1;
-            if (strana != trenutnaStrana) {
-                trenutnaStrana = strana;
-                pnlStavke.add(sekcijaNaslov("Strana " + trenutnaStrana));
-            }
+        for (domen.StavkeObrasca s : stavkeZaStranu) {
             pnlStavke.add(redPolja(s));
         }
         pnlStavke.add(Box.createVerticalGlue());
         pnlStavke.revalidate();
         pnlStavke.repaint();
-    }
-
-    private JComponent sekcijaNaslov(String tekst) {
-        JLabel lbl = new JLabel(tekst);
-        lbl.setFont(new Font("SansSerif", Font.BOLD, 12));
-        lbl.setForeground(ACCENT);
-        lbl.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER),
-                new EmptyBorder(10, 4, 5, 4)));
-        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
-        lbl.setMaximumSize(new Dimension(Integer.MAX_VALUE, lbl.getPreferredSize().height));
-        return lbl;
     }
 
     private JComponent redPolja(domen.StavkeObrasca s) {
@@ -474,13 +448,34 @@ public class SV20ObrazacForma extends JDialog {
 
     // ── Zajednički izgled ─────────────────────────────────────────────────────
 
-    private JButton dugme(String tekst, Color boja) {
+    private JLabel naslov(String tekst) {
+        JLabel naslov = new JLabel(tekst);
+        naslov.setFont(new Font("SansSerif", Font.BOLD, 18));
+        naslov.setForeground(ACCENT);
+        naslov.setBorder(new EmptyBorder(2, 2, 4, 2));
+        return naslov;
+    }
+
+    private JButton dugme(String tekst, Color boja, boolean istaknuto) {
         JButton btn = new JButton(tekst);
         btn.setBackground(boja);
         btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("SansSerif", istaknuto ? Font.BOLD : Font.PLAIN, 12));
+        btn.setFocusPainted(false);
+        btn.setBorder(new EmptyBorder(9, 16, 9, 16));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    private JButton ghostDugme(String tekst) {
+        JButton btn = new JButton(tekst);
+        btn.setForeground(ACCENT);
+        btn.setBackground(Color.WHITE);
         btn.setFont(new Font("SansSerif", Font.PLAIN, 12));
         btn.setFocusPainted(false);
-        btn.setBorder(new EmptyBorder(8, 14, 8, 14));
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER),
+                new EmptyBorder(8, 14, 8, 14)));
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return btn;
     }
@@ -510,14 +505,61 @@ public class SV20ObrazacForma extends JDialog {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tblObrasci.setModel(tableModelObrasci);
-        tblObrasci.setRowHeight(24);
+        tblObrasci.setRowHeight(28);
         tblObrasci.setGridColor(new Color(228, 232, 238));
         tblObrasci.getTableHeader().setBackground(new Color(242, 244, 247));
         tblObrasci.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
         tblObrasci.setSelectionBackground(new Color(214, 224, 235));
+        tblObrasci.getColumnModel().getColumn(4).setCellRenderer(new StatusBadgeRenderer());
+        tblObrasci.getColumnModel().getColumn(7).setCellRenderer(new OcrBadgeRenderer());
         tblObrasci.getColumnModel().getColumn(8).setMinWidth(0);
         tblObrasci.getColumnModel().getColumn(8).setMaxWidth(0);
         tblObrasci.getColumnModel().getColumn(8).setWidth(0);
+    }
+
+    /** Boji status obrasca kao značku umesto golog teksta — lakše se uočava na prvi pogled. */
+    private static class StatusBadgeRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+            JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            lbl.setOpaque(true);
+            lbl.setHorizontalAlignment(SwingConstants.CENTER);
+            lbl.setFont(new Font("SansSerif", Font.BOLD, 11));
+            lbl.setBorder(new EmptyBorder(3, 8, 3, 8));
+            Color bg = new Color(230, 230, 230);
+            Color fg = new Color(80, 80, 80);
+            if (value instanceof domen.Status) {
+                switch ((domen.Status) value) {
+                    case PODNET: bg = new Color(227, 237, 251); fg = new Color(26, 77, 143); break;
+                    case U_OBRADI: bg = new Color(255, 244, 224); fg = new Color(138, 83, 0); break;
+                    case VRACEN_NA_KOREKCIJU: bg = new Color(253, 236, 234); fg = BAD; break;
+                    case ODOBREN: bg = new Color(232, 245, 233); fg = OK; break;
+                    case ODBIJEN: bg = new Color(253, 236, 234); fg = BAD; break;
+                }
+            }
+            lbl.setBackground(isSelected ? table.getSelectionBackground() : bg);
+            lbl.setForeground(fg);
+            return lbl;
+        }
+    }
+
+    /** Da/Ne za OCR status, kao mala značka. */
+    private static class OcrBadgeRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+            JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            lbl.setOpaque(true);
+            lbl.setHorizontalAlignment(SwingConstants.CENTER);
+            lbl.setFont(new Font("SansSerif", Font.BOLD, 11));
+            lbl.setBorder(new EmptyBorder(3, 8, 3, 8));
+            boolean da = "Da".equals(value);
+            lbl.setBackground(isSelected ? table.getSelectionBackground()
+                    : (da ? new Color(232, 245, 233) : new Color(238, 240, 243)));
+            lbl.setForeground(da ? OK : TEXT_MUTED);
+            return lbl;
+        }
     }
 
     // ── Javni API ──────────────────────────────────────────────────────────

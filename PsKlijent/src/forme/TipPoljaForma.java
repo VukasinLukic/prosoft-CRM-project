@@ -5,7 +5,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
 
-public class TipPoljaForma extends JDialog {
+public class TipPoljaForma extends JPanel {
 
     private JTextField txtNazivPolja;
     private JTextField txtRegexValidacija;
@@ -24,20 +24,13 @@ public class TipPoljaForma extends JDialog {
     private DefaultTableModel tableModel;
     private domen.TipPolja selektovani;
 
-    public TipPoljaForma(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
-        initComponents();
-    }
-
-    public TipPoljaForma(java.awt.Frame parent) {
-        super(parent, true);
+    public TipPoljaForma() {
         initComponents();
         initCustomTableModel();
     }
 
     private void initComponents() {
-        setTitle("Upravljanje Tipovima Polja");
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setBackground(Color.WHITE);
 
         txtNazivPolja = new JTextField(); txtNazivPolja.setPreferredSize(new Dimension(200, 28));
         txtRegexValidacija = new JTextField(); txtRegexValidacija.setPreferredSize(new Dimension(200, 28));
@@ -97,6 +90,7 @@ public class TipPoljaForma extends JDialog {
 
         JPanel topGroup = new JPanel(new BorderLayout(0, 4));
         topGroup.setBorder(new EmptyBorder(4, 4, 4, 4));
+        topGroup.add(naslovPanel("Upravljanje tipovima polja"), BorderLayout.NORTH);
         topGroup.add(formPanel, BorderLayout.CENTER);
 
         setLayout(new BorderLayout(4, 4));
@@ -105,7 +99,14 @@ public class TipPoljaForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        FormeUtil.otvoriPunEkran(this);
+    }
+
+    private JComponent naslovPanel(String tekst) {
+        JLabel naslov = new JLabel(tekst);
+        naslov.setFont(new Font("SansSerif", Font.BOLD, 18));
+        naslov.setForeground(new Color(38, 70, 110));
+        naslov.setBorder(new EmptyBorder(2, 2, 10, 2));
+        return naslov;
     }
 
     private void addRow2(JPanel p, GridBagConstraints g, int row,

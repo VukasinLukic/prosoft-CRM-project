@@ -5,7 +5,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
 
-public class TerminDezurstvaForma extends JDialog {
+public class TerminDezurstvaForma extends JPanel {
 
     private JComboBox cmbTipTermina;
     private JTextField txtKancelarija;
@@ -19,20 +19,13 @@ public class TerminDezurstvaForma extends JDialog {
     private DefaultTableModel tableModel;
     private domen.TerminDezurstva selektovani;
 
-    public TerminDezurstvaForma(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
-        initComponents();
-    }
-
-    public TerminDezurstvaForma(java.awt.Frame parent) {
-        super(parent, true);
+    public TerminDezurstvaForma() {
         initComponents();
         initCustomTableModel();
     }
 
     private void initComponents() {
-        setTitle("Upravljanje Terminima Dežurstva");
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setBackground(Color.WHITE);
 
         cmbTipTermina = new JComboBox();
         cmbTipTermina.setPreferredSize(new Dimension(250, 28));
@@ -82,6 +75,7 @@ public class TerminDezurstvaForma extends JDialog {
 
         JPanel topGroup = new JPanel(new BorderLayout(0, 4));
         topGroup.setBorder(new EmptyBorder(4, 4, 4, 4));
+        topGroup.add(naslovPanel("Upravljanje terminima dežurstva"), BorderLayout.NORTH);
         topGroup.add(formPanel, BorderLayout.CENTER);
 
         setLayout(new BorderLayout(4, 4));
@@ -90,7 +84,14 @@ public class TerminDezurstvaForma extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
 
         initCustomTableModel();
-        FormeUtil.otvoriPunEkran(this);
+    }
+
+    private JComponent naslovPanel(String tekst) {
+        JLabel naslov = new JLabel(tekst);
+        naslov.setFont(new Font("SansSerif", Font.BOLD, 18));
+        naslov.setForeground(new Color(38, 70, 110));
+        naslov.setBorder(new EmptyBorder(2, 2, 10, 2));
+        return naslov;
     }
 
     private JButton makeButton(String text, Color bg) {
