@@ -24,13 +24,18 @@ public class GlavnaFormaController {
     private final GlavnaForma gf;
 
     // Svaki ekran se pravi jednom (lenjo, pri prvoj poseti) i posle se samo prikazuje —
-    // navigacija nikad ne otvara nov prozor niti ponovo učitava podatke sa servera.
+    // navigacija nikad ne otvara nov prozor niti ponovo učitava podatke sa servera. Referenca na
+    // kontroler se čuva za ekrane čiji combo-boksovi zavise od šifarnika koji se mogu promeniti
+    // na DRUGOM ekranu (npr. Student combo na Obrascima, Studijski program combo na Studentima) —
+    // bez ovoga bi novododat zapis ostao nevidljiv dok se aplikacija ne restartuje.
     private boolean obrasciOtvoreni;
     private boolean studentiOtvoreni;
     private boolean zaposleniOtvoreni;
     private boolean studijskiProgramOtvoren;
     private boolean terminiOtvoreni;
     private boolean tipoviPoljaOtvoreni;
+    private SV20ObrazacController obrasciController;
+    private StudentController studentController;
 
     public GlavnaFormaController(GlavnaForma gf) {
         this.gf = gf;
@@ -82,10 +87,11 @@ public class GlavnaFormaController {
     private void otvoriSV20Obrazac() {
         if (!obrasciOtvoreni) {
             SV20ObrazacForma forma = new SV20ObrazacForma();
-            new SV20ObrazacController(forma);
+            obrasciController = new SV20ObrazacController(forma);
             gf.registrujIPrikaziEkran(GlavnaForma.EKRAN_OBRASCI, forma);
             obrasciOtvoreni = true;
         } else {
+            obrasciController.osveziSifarnike();
             gf.prikaziEkran(GlavnaForma.EKRAN_OBRASCI);
         }
     }
@@ -93,10 +99,11 @@ public class GlavnaFormaController {
     private void otvoriStudent() {
         if (!studentiOtvoreni) {
             StudentForma forma = new StudentForma();
-            new StudentController(forma);
+            studentController = new StudentController(forma);
             gf.registrujIPrikaziEkran(GlavnaForma.EKRAN_STUDENTI, forma);
             studentiOtvoreni = true;
         } else {
+            studentController.osveziSifarnike();
             gf.prikaziEkran(GlavnaForma.EKRAN_STUDENTI);
         }
     }

@@ -73,10 +73,11 @@ public class ZaposleniForma extends JPanel {
         addLabeledRow(formPanel, g, 2, "Korisničko ime:", txtKorisnickoIme, "Email:", txtEmail);
         addLabeledRow(formPanel, g, 4, "Lozinka:", txtSifra, "Potvrda lozinke:", txtPotvrdaSifre);
 
-        // ── Table section ─────────────────────────────────────────────────────
+        // ── Table section (pretraga direktno iznad tabele, isto kao na obrascima) ──
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(180, 210, 240)), " Lista zaposlenih "));
+        tablePanel.add(searchPanel, BorderLayout.NORTH);
         tablePanel.add(jScrollPane1, BorderLayout.CENTER);
 
         // ── Button panel ──────────────────────────────────────────────────────
@@ -90,8 +91,7 @@ public class ZaposleniForma extends JPanel {
         JPanel topGroup = new JPanel(new BorderLayout(0, 4));
         topGroup.setBorder(new EmptyBorder(4, 4, 4, 4));
         topGroup.add(naslovPanel("Upravljanje zaposlenima"), BorderLayout.NORTH);
-        topGroup.add(searchPanel, BorderLayout.CENTER);
-        topGroup.add(formPanel, BorderLayout.SOUTH);
+        topGroup.add(formPanel, BorderLayout.CENTER);
 
         setLayout(new BorderLayout(4, 4));
         add(topGroup, BorderLayout.NORTH);

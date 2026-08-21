@@ -78,6 +78,13 @@ public class StudentController {
         });
     }
 
+    /** Poziva se svaki put kad se ovaj ekran ponovo otvori (i kad je već keširan) — bez ovoga
+     *  bi novododat studijski program iz drugog ekrana ostao nevidljiv u combo-u dok se
+     *  aplikacija ne restartuje, jer se combo inače puni samo jednom pri prvom otvaranju. */
+    public void osveziSifarnike() {
+        ucitajStudijskePrograme();
+    }
+
     private void ucitajStudijskePrograme() {
         try {
             List<StudijskiProgram> lista = Komunikacija.getInstanca().vratiSveStudijskePrograme();

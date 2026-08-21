@@ -19,7 +19,7 @@ public class SV20ObrazacForma extends JPanel {
     private JComboBox cmbStatus;
     private JComboBox cmbKriterijum;
     private JSpinner spnSkolskaGodina;
-    private JSpinner spnSemestar;
+    private JComboBox<Integer> cmbSemestar;
     private JTextField txtPretraga;
     private JScrollPane jScrollPane1;
     private JTable tblObrasci;
@@ -95,7 +95,8 @@ public class SV20ObrazacForma extends JPanel {
         cmbKriterijum = new JComboBox(new String[]{"Indeks studenta", "Zaposleni", "Status"});
         spnSkolskaGodina = new JSpinner(new SpinnerNumberModel(
                 java.util.Calendar.getInstance().get(java.util.Calendar.YEAR), 2000, 2100, 1));
-        spnSemestar = new JSpinner(new SpinnerNumberModel(1, 1, 12, 1));
+        cmbSemestar = new JComboBox<>();
+        for (int i = 1; i <= 12; i++) { cmbSemestar.addItem(i); }
         txtPretraga = new JTextField();
 
         tblObrasci = new JTable();
@@ -129,9 +130,9 @@ public class SV20ObrazacForma extends JPanel {
         formPanel.add(spnSkolskaGodina, g);
         g.gridx = 2; g.fill = GridBagConstraints.NONE;
         formPanel.add(new JLabel("Semestar:"), g);
-        g.gridx = 3; g.fill = GridBagConstraints.HORIZONTAL;
-        spnSemestar.setPreferredSize(new Dimension(80, 28));
-        formPanel.add(spnSemestar, g);
+        g.gridx = 3; g.fill = GridBagConstraints.NONE;
+        cmbSemestar.setPreferredSize(new Dimension(60, 28));
+        formPanel.add(cmbSemestar, g);
 
         g.gridx = 0; g.gridy = 2; g.fill = GridBagConstraints.NONE; g.weightx = 0;
         formPanel.add(new JLabel("Status:"), g);
@@ -570,7 +571,7 @@ public class SV20ObrazacForma extends JPanel {
     public DefaultTableModel getTableModelObrasci() { return tableModelObrasci; }
     public JComboBox<domen.Student> getCmbStudent() { return cmbStudent; }
     public JSpinner getSpnSkolskaGodina() { return spnSkolskaGodina; }
-    public JSpinner getSpnSemestar() { return spnSemestar; }
+    public JComboBox<Integer> getCmbSemestar() { return cmbSemestar; }
     public JComboBox<domen.Status> getCmbStatus() { return cmbStatus; }
     public JTextField getTxtPretraga() { return txtPretraga; }
     public JComboBox<String> getCmbKriterijum() { return cmbKriterijum; }

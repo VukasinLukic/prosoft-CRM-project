@@ -115,6 +115,14 @@ public class SV20ObrazacController {
         });
     }
 
+    /** Poziva se svaki put kad se ovaj ekran ponovo otvori (i kad je već keširan) — bez ovoga
+     *  bi novododat student ostao nevidljiv u combo-u dok se aplikacija ne restartuje, jer se
+     *  combo inače puni samo jednom pri prvom otvaranju ekrana. */
+    public void osveziSifarnike() {
+        ucitajStudente();
+        ucitajZaposlene();
+    }
+
     private void ucitajStudente() {
         try {
             List<Student> lista = Komunikacija.getInstanca().vratiSveStudente();
@@ -200,7 +208,7 @@ public class SV20ObrazacController {
             Student student = (Student) forma.getCmbStudent().getSelectedItem();
             ZaposleniFakulteta ulogovani = Cordinator.getInstanca().getUlogovaniKorisnik();
             int skolskaGodina = (int) forma.getSpnSkolskaGodina().getValue();
-            int semestar = (int) forma.getSpnSemestar().getValue();
+            int semestar = (int) forma.getCmbSemestar().getSelectedItem();
             Status status = (Status) forma.getCmbStatus().getSelectedItem();
 
             if (!validirajPodatke(student, ulogovani)) return;
@@ -240,7 +248,7 @@ public class SV20ObrazacController {
             }
             Student student = (Student) forma.getCmbStudent().getSelectedItem();
             int skolskaGodina = (int) forma.getSpnSkolskaGodina().getValue();
-            int semestar = (int) forma.getSpnSemestar().getValue();
+            int semestar = (int) forma.getCmbSemestar().getSelectedItem();
             Status status = (Status) forma.getCmbStatus().getSelectedItem();
 
             if (student == null) {
@@ -328,7 +336,12 @@ public class SV20ObrazacController {
      * Kosa crta '/' radi identično kao '\' i na Windows-u i bezbedna je za SQL.
      */
     private static String normalizujPutanju(String putanja) {
-        return putanja == null ? null : putanja.replace('\\', '/');
+        if (putanja == null) return null;
+        // Stariji zapisi (pre nego što je uveden pravi SQL NULL za "nema skena") su
+        // greškom čuvali doslovni tekst "null" (4 karaktera) umesto prazne vrednosti —
+        // tretiraj to isto kao da putanja i ne postoji.
+        if (putanja.trim().isEmpty() || putanja.trim().equalsIgnoreCase("null")) return null;
+        return putanja.replace('\\', '/');
     }
 
     // ── OCR pregled — otvaranje ekrana za jedan obrazac ──────────────────────
@@ -697,7 +710,7 @@ public class SV20ObrazacController {
     private void ocisti() {
         if (forma.getCmbStudent().getItemCount() > 0) forma.getCmbStudent().setSelectedIndex(0);
         forma.getSpnSkolskaGodina().setValue(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR));
-        forma.getSpnSemestar().setValue(1);
+        forma.getCmbSemestar().setSelectedItem(1);
         forma.getCmbStatus().setSelectedIndex(0);
         forma.setSelektovaniObrazac(null);
         forma.getTblObrasci().clearSelection();
@@ -717,7 +730,7 @@ public class SV20ObrazacController {
             if (o == null) return;
 
             forma.getSpnSkolskaGodina().setValue(o.getSkolskaGodina());
-            forma.getSpnSemestar().setValue(o.getSemestar());
+            forma.getCmbSemestar().setSelectedItem(o.getSemestar());
             forma.getCmbStatus().setSelectedItem(o.getStatus());
 
             String indeksStudenta = o.getIndeks() != null ? o.getIndeks().getIndeks() : null;
