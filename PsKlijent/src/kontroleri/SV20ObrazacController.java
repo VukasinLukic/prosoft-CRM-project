@@ -1,5 +1,6 @@
 package kontroleri;
 
+import cordinator.Cordinator;
 import domen.SV20Obrazac;
 import domen.Status;
 import domen.StavkeObrasca;
@@ -36,10 +37,7 @@ public class SV20ObrazacController {
     // koriste se u popuniFormu() da selektovani obrazac zadrži SVA polja (npr. datumUnosa), umesto da se
     // ručno rekonstruiše iz ćelija tabele i time izgubi ono što tabela ne prikazuje.
     private List<SV20Obrazac> ucitaniObrasci = new ArrayList<>();
-
-    // Stanje kartice "Lista" — okretanje strane skena pre pokretanja OCR-a
-    private int stranaLista = 1;
-    private int maxStranaLista = 1;
+    private List<ZaposleniFakulteta> sviZaposleni = new ArrayList<>();
 
     // Stanje kartice "OCR pregled"
     private int stranaPregled = 1;
@@ -78,20 +76,12 @@ public class SV20ObrazacController {
             @Override public void actionPerformed(ActionEvent e) { pretrazi(); }
         });
 
-        forma.addOdaberiFajlListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { odaberiFajl(); }
+        forma.addDodajSlikuListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) { dodajSliku(); }
         });
 
         forma.addPokreniOcrListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { pokreniOcr(forma.getSelektovaniObrazac()); }
-        });
-
-        forma.addPonoviOcrListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) { pokreniOcr(obrazacUPregledu); }
-        });
-
-        forma.addPregledajStavkeListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { otvoriOcrPregled(forma.getSelektovaniObrazac()); }
         });
 
         forma.addNazadListener(new ActionListener() {
@@ -105,12 +95,6 @@ public class SV20ObrazacController {
             @Override public void actionPerformed(ActionEvent e) { sacuvajStavke(); }
         });
 
-        forma.addPrethodnaStranaListaListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { okreniStranuListe(stranaLista - 1); }
-        });
-        forma.addSledecaStranaListaListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { okreniStranuListe(stranaLista + 1); }
-        });
         forma.addPrethodnaStranaPregledListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) { okreniStranuPregleda(stranaPregled - 1); }
         });
@@ -142,11 +126,11 @@ public class SV20ObrazacController {
         }
     }
 
+    /** Zaposleni se više NE bira ručno na ovom ekranu (uvek je ulogovani korisnik) —
+     *  lista se učitava samo da bi se u tabeli prikazalo ime po ID-ju. */
     private void ucitajZaposlene() {
         try {
-            List<ZaposleniFakulteta> lista = Komunikacija.getInstanca().vratiSveZaposlene();
-            forma.getCmbZaposleni().removeAllItems();
-            for (ZaposleniFakulteta z : lista) { forma.getCmbZaposleni().addItem(z); }
+            sviZaposleni = Komunikacija.getInstanca().vratiSveZaposlene();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(forma, "Greska pri ucitavanju zaposlenih: " + ex.getMessage(),
                     "Greska", JOptionPane.ERROR_MESSAGE);
@@ -197,13 +181,13 @@ public class SV20ObrazacController {
     /**
      * Generički broker učita SV20Obrazac preko "SELECT * FROM sv20obrazac" (bez JOIN-a),
      * pa vratiObjekatIzRS zna samo ID zaposlenog, ne i ime/prezime — otud su ta polja null
-     * i tabela je pre ove popravke prikazivala "null null". Ime tražimo u listi zaposlenih
-     * koja je već učitana za cmbZaposleni, umesto što se oslanjamo na nepotpun objekat iz baze.
+     * i tabela je pre ove popravke prikazivala "null null". Ime tražimo u listi svih
+     * zaposlenih učitanoj pri pokretanju ekrana, umesto što se oslanjamo na nepotpun
+     * objekat iz baze.
      */
     private String imeZaposlenog(ZaposleniFakulteta stub) {
         if (stub == null) return "";
-        for (int i = 0; i < forma.getCmbZaposleni().getItemCount(); i++) {
-            ZaposleniFakulteta z = forma.getCmbZaposleni().getItemAt(i);
+        for (ZaposleniFakulteta z : sviZaposleni) {
             if (z.getIdZaposlenog() == stub.getIdZaposlenog()) {
                 return z.getIme() + " " + z.getPrezime();
             }
@@ -214,30 +198,29 @@ public class SV20ObrazacController {
     private void dodaj() {
         try {
             Student student = (Student) forma.getCmbStudent().getSelectedItem();
-            ZaposleniFakulteta zaposleni = (ZaposleniFakulteta) forma.getCmbZaposleni().getSelectedItem();
+            ZaposleniFakulteta ulogovani = Cordinator.getInstanca().getUlogovaniKorisnik();
             int skolskaGodina = (int) forma.getSpnSkolskaGodina().getValue();
             int semestar = (int) forma.getSpnSemestar().getValue();
             Status status = (Status) forma.getCmbStatus().getSelectedItem();
-            String putanjaFajla = naPrazno(normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim()));
 
-            if (!validirajPodatke(student, zaposleni)) return;
+            if (!validirajPodatke(student, ulogovani)) return;
 
             SV20Obrazac o = new SV20Obrazac();
             o.setDatumUnosa(new Date());
             o.setSkolskaGodina(skolskaGodina);
             o.setSemestar(semestar);
             o.setStatus(status);
-            o.setPutanjaDoFajla(putanjaFajla);
+            o.setPutanjaDoFajla(null);
             o.setOcrIzvrseno(false);
             o.setBrojUspesnihStavki(0);
             o.setBrojNeuspesnihStavki(0);
             o.setIndeks(student);
-            o.setIdZaposlenog(zaposleni);
+            o.setIdZaposlenog(ulogovani);
 
             Komunikacija.getInstanca().kreirajSV20Obrazac(o);
 
             // Osveži listu (najnoviji je na vrhu) i odmah ga selektuj — korisnik može
-            // da klikne "Obradi OCR" bez dodatnog koraka "izaberi red iz tabele".
+            // dvoklikom odmah da otvori obrazac i priloži sken, bez dodatnog traženja u tabeli.
             ucitajPodatke();
             if (forma.getTableModelObrasci().getRowCount() > 0) {
                 forma.getTblObrasci().setRowSelectionInterval(0, 0);
@@ -256,21 +239,22 @@ public class SV20ObrazacController {
                 return;
             }
             Student student = (Student) forma.getCmbStudent().getSelectedItem();
-            ZaposleniFakulteta zaposleni = (ZaposleniFakulteta) forma.getCmbZaposleni().getSelectedItem();
             int skolskaGodina = (int) forma.getSpnSkolskaGodina().getValue();
             int semestar = (int) forma.getSpnSemestar().getValue();
             Status status = (Status) forma.getCmbStatus().getSelectedItem();
-            String putanjaFajla = naPrazno(normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim()));
 
-            if (!validirajPodatke(student, zaposleni)) return;
+            if (student == null) {
+                JOptionPane.showMessageDialog(forma, "Student je obavezan!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
+            // Zaposleni se NE menja pri izmeni osnovnih podataka — ostaje onaj ko je
+            // obrazac originalno kreirao, izmena ovde ne "preuzima vlasništvo".
             SV20Obrazac o = forma.getSelektovaniObrazac();
             o.setSkolskaGodina(skolskaGodina);
             o.setSemestar(semestar);
             o.setStatus(status);
-            o.setPutanjaDoFajla(putanjaFajla);
             o.setIndeks(student);
-            o.setIdZaposlenog(zaposleni);
 
             Komunikacija.getInstanca().promeniSV20Obrazac(o);
 
@@ -337,18 +321,6 @@ public class SV20ObrazacController {
         }
     }
 
-    private void odaberiFajl() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Odaberite SV-20 obrazac");
-        fileChooser.setFileFilter(new FileNameExtensionFilter(
-                "Slike i PDF (*.jpg, *.png, *.pdf, *.tif)", "jpg", "jpeg", "png", "pdf", "tif", "tiff"));
-        if (fileChooser.showOpenDialog(forma) == JFileChooser.APPROVE_OPTION) {
-            String putanja = normalizujPutanju(fileChooser.getSelectedFile().getAbsolutePath());
-            forma.getTxtPutanjaFajla().setText(putanja);
-            ucitajPrikazListe(putanja);
-        }
-    }
-
     /**
      * Baza gradi upite spajanjem stringova bez escape-ovanja, a MySQL tretira
      * '\' kao escape karakter u string literalima — Windows putanje sa '\'
@@ -359,51 +331,140 @@ public class SV20ObrazacController {
         return putanja == null ? null : putanja.replace('\\', '/');
     }
 
-    // ── Prikaz skena — kartica "Lista" ───────────────────────────────────────
+    // ── OCR pregled — otvaranje ekrana za jedan obrazac ──────────────────────
 
-    private void ucitajPrikazListe(String putanja) {
-        if (putanja == null || putanja.isEmpty()) return;
-        forma.getLblSlikaLista().setText("Učitavam prikaz…");
-        forma.getBtnPrethodnaStranaLista().setEnabled(false);
-        forma.getBtnSledecaStranaLista().setEnabled(false);
+    /**
+     * Otvara ekran za dati obrazac. RADI I KAD OBRAZAC NEMA SKEN — u tom slučaju levi
+     * panel pokazuje "dodaj sliku" stanje, desni panel je prazan dok se OCR ne pokrene.
+     * Ako obrazac već ima sken, slika i sačuvane stavke (ako postoje) se učitaju.
+     */
+    private void otvoriOcrPregled(SV20Obrazac obrazac) {
+        if (obrazac == null) {
+            JOptionPane.showMessageDialog(forma, "Izaberite obrazac iz tabele!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        obrazacUPregledu = obrazac;
+        String putanja = normalizujPutanju(obrazac.getPutanjaDoFajla());
+        String zaglavlje = zaglavljeObrasca(obrazac);
 
-        SwingWorker<ocr.OcrPrikaz, Void> worker = new SwingWorker<ocr.OcrPrikaz, Void>() {
-            @Override protected ocr.OcrPrikaz doInBackground() throws Exception {
-                return ocr.OcrKlijent.preuzmiPrikaz(putanja);
+        if (putanja == null || putanja.isEmpty()) {
+            stavkeUPregledu = new ArrayList<>();
+            stranaPregled = 1;
+            maxStranaPregled = 1;
+            forma.prikaziStanjeSlike(false);
+            forma.prikaziStavke(stavkeUPregledu, 1);
+            forma.getLblSazetakPregled().setText(zaglavlje + " — nema priložene slike.");
+            forma.prikaziKarticu(SV20ObrazacForma.KARTICA_PREGLED);
+            return;
+        }
+
+        forma.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+
+        SwingWorker<Object[], Void> worker = new SwingWorker<Object[], Void>() {
+            @Override protected Object[] doInBackground() throws Exception {
+                ocr.OcrPrikaz prikaz = ocr.OcrKlijent.preuzmiPrikaz(putanja);
+
+                StavkeObrasca kriterijum = new StavkeObrasca();
+                SV20Obrazac o = new SV20Obrazac();
+                o.setIdObrazac(obrazac.getIdObrazac());
+                kriterijum.setIdObrazac(o);
+                List<StavkeObrasca> stavke = Komunikacija.getInstanca().pretraziStavkeObrasca(kriterijum);
+
+                // Generički broker (bez JOIN-a) vraća idPolja kao "patrljak" (samo ID, bez
+                // naziva/strane/redosleda) — bez ovoga polja u pregledu nemaju labelu
+                // i sva ispadnu pod "Strana 0".
+                obogatiTipPoljaPodacima(stavke, Komunikacija.getInstanca().vratiSveTipovePolja());
+
+                stavke.sort(Comparator.comparingInt(
+                        (StavkeObrasca s) -> s.getIdPolja() != null ? s.getIdPolja().getStranica() : 1)
+                        .thenComparingInt(s -> s.getIdPolja() != null ? s.getIdPolja().getRedosledObrade() : 0));
+
+                return new Object[]{prikaz, stavke};
             }
+
             @Override protected void done() {
+                forma.setCursor(java.awt.Cursor.getDefaultCursor());
                 try {
-                    ocr.OcrPrikaz prikaz = get();
-                    stranaLista = 1;
-                    maxStranaLista = prikaz.getBrojStrana();
-                    forma.prikaziSliku(prikaz.getSlika(), forma.getLblSlikaLista());
-                    forma.getLblStranaLista().setText("Strana 1 od " + maxStranaLista);
-                    forma.getBtnSledecaStranaLista().setEnabled(maxStranaLista > 1);
+                    Object[] rezultat = get();
+                    ocr.OcrPrikaz prikaz = (ocr.OcrPrikaz) rezultat[0];
+                    @SuppressWarnings("unchecked")
+                    List<StavkeObrasca> stavke = (List<StavkeObrasca>) rezultat[1];
+
+                    stavkeUPregledu = stavke;
+                    stranaPregled = 1;
+                    maxStranaPregled = prikaz.getBrojStrana();
+
+                    forma.prikaziStanjeSlike(true);
+                    forma.postaviTekstDugmetaOcr(obrazac.isOcrIzvrseno());
+                    forma.prikaziSliku(prikaz.getSlika(), forma.getLblSlikaPregled());
+                    forma.getLblStranaPregled().setText("Strana 1 od " + maxStranaPregled);
+                    forma.getBtnPrethodnaStranaPregled().setEnabled(false);
+                    forma.getBtnSledecaStranaPregled().setEnabled(maxStranaPregled > 1);
+
+                    forma.prikaziStavke(stavkeZaStranu(1), 1);
+                    forma.getLblSazetakPregled().setText(zaglavlje + (stavke.isEmpty() ? "" : " — " + sazetakStavki(stavke)));
+                    forma.prikaziKarticu(SV20ObrazacForma.KARTICA_PREGLED);
+
                 } catch (Exception ex) {
-                    forma.getLblSlikaLista().setIcon(null);
-                    forma.getLblSlikaLista().setText("Prikaz nije dostupan (OCR servis?)");
+                    Throwable uzrok = ex.getCause() != null ? ex.getCause() : ex;
+                    JOptionPane.showMessageDialog(forma,
+                            "Ne mogu da otvorim OCR pregled: " + uzrok.getMessage()
+                            + "\n\nProverite da li je OCR servis pokrenut na http://localhost:9001",
+                            "Greška", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
         worker.execute();
     }
 
-    private void okreniStranuListe(int nova) {
-        if (nova < 1 || nova > maxStranaLista) return;
-        SwingWorker<java.awt.image.BufferedImage, Void> worker = new SwingWorker<java.awt.image.BufferedImage, Void>() {
-            @Override protected java.awt.image.BufferedImage doInBackground() throws Exception {
-                return ocr.OcrKlijent.preuzmiStranu(nova);
+    private String zaglavljeObrasca(SV20Obrazac o) {
+        String indeks = o.getIndeks() != null ? o.getIndeks().getIndeks() : "";
+        return "Obrazac #" + o.getIdObrazac() + (indeks.isEmpty() ? "" : " — " + indeks);
+    }
+
+    /** Bira fajl i ODMAH ga trajno vezuje za obrazac (bez posebnog "Sačuvaj" koraka za sken). */
+    private void dodajSliku() {
+        if (obrazacUPregledu == null) return;
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Odaberite SV-20 obrazac");
+        fileChooser.setFileFilter(new FileNameExtensionFilter(
+                "Slike i PDF (*.jpg, *.png, *.pdf, *.tif)", "jpg", "jpeg", "png", "pdf", "tif", "tiff"));
+        if (fileChooser.showOpenDialog(forma) != JFileChooser.APPROVE_OPTION) return;
+
+        String putanja = normalizujPutanju(fileChooser.getSelectedFile().getAbsolutePath());
+        obrazacUPregledu.setPutanjaDoFajla(putanja);
+        try {
+            Komunikacija.getInstanca().promeniSV20Obrazac(obrazacUPregledu);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(forma, "Ne mogu da sačuvam putanju fajla: " + ex.getMessage(),
+                    "Greška", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        final String putanjaKonacna = putanja;
+        SwingWorker<ocr.OcrPrikaz, Void> worker = new SwingWorker<ocr.OcrPrikaz, Void>() {
+            @Override protected ocr.OcrPrikaz doInBackground() throws Exception {
+                return ocr.OcrKlijent.preuzmiPrikaz(putanjaKonacna);
             }
             @Override protected void done() {
                 try {
-                    forma.prikaziSliku(get(), forma.getLblSlikaLista());
-                    stranaLista = nova;
-                    forma.getLblStranaLista().setText("Strana " + stranaLista + " od " + maxStranaLista);
-                    forma.getBtnPrethodnaStranaLista().setEnabled(stranaLista > 1);
-                    forma.getBtnSledecaStranaLista().setEnabled(stranaLista < maxStranaLista);
+                    ocr.OcrPrikaz prikaz = get();
+                    stranaPregled = 1;
+                    maxStranaPregled = prikaz.getBrojStrana();
+                    forma.prikaziStanjeSlike(true);
+                    forma.postaviTekstDugmetaOcr(false);
+                    forma.prikaziSliku(prikaz.getSlika(), forma.getLblSlikaPregled());
+                    forma.getLblStranaPregled().setText("Strana 1 od " + maxStranaPregled);
+                    forma.getBtnPrethodnaStranaPregled().setEnabled(false);
+                    forma.getBtnSledecaStranaPregled().setEnabled(maxStranaPregled > 1);
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(forma, "Ne mogu da učitam stranu " + nova + ": " + ex.getMessage(),
+                    JOptionPane.showMessageDialog(forma,
+                            "Fajl je sačuvan, ali prikaz nije uspeo: " + ex.getMessage()
+                            + "\n\nProverite da li je OCR servis pokrenut na http://localhost:9001",
                             "Greška", JOptionPane.ERROR_MESSAGE);
+                    forma.prikaziStanjeSlike(true);
+                    forma.postaviTekstDugmetaOcr(false);
                 }
             }
         };
@@ -427,90 +488,6 @@ public class SV20ObrazacController {
                     forma.prikaziStavke(stavkeZaStranu(stranaPregled), stranaPregled);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(forma, "Ne mogu da učitam stranu " + nova + ": " + ex.getMessage(),
-                            "Greška", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        };
-        worker.execute();
-    }
-
-    // ── OCR pregled — kartica "Pregled" ──────────────────────────────────────
-
-    /**
-     * Otvara karticu za pregled/korekciju OCR stavki. Ako obrazac već ima sačuvane
-     * stavke (ocrIzvrseno=true), učitava NJIH iz baze — ne pokreće nov OCR poziv.
-     * Sliku uvek ponovo otprema servisu (preuzmiPrikaz) da bi server "znao" koji je
-     * poslednji fajl, pa okretanje strane (preuzmiStranu) radi ispravno.
-     */
-    private void otvoriOcrPregled(SV20Obrazac obrazac) {
-        if (obrazac == null) {
-            JOptionPane.showMessageDialog(forma, "Izaberite obrazac iz tabele!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        String putanja = normalizujPutanju(obrazac.getPutanjaDoFajla());
-        if (putanja == null || putanja.isEmpty()) {
-            JOptionPane.showMessageDialog(forma, "Obrazac nema sačuvan fajl skena.", "Upozorenje", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        forma.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-
-        SwingWorker<Object[], Void> worker = new SwingWorker<Object[], Void>() {
-            @Override protected Object[] doInBackground() throws Exception {
-                ocr.OcrPrikaz prikaz = ocr.OcrKlijent.preuzmiPrikaz(putanja);
-
-                StavkeObrasca kriterijum = new StavkeObrasca();
-                SV20Obrazac o = new SV20Obrazac();
-                o.setIdObrazac(obrazac.getIdObrazac());
-                kriterijum.setIdObrazac(o);
-                List<StavkeObrasca> stavke = Komunikacija.getInstanca().pretraziStavkeObrasca(kriterijum);
-
-                // Generički broker (bez JOIN-a) vraća idPolja kao "patrljak" (samo ID, bez
-                // naziva/stranice/redosleda) — bez ovoga polja u pregledu nemaju labelu
-                // i sva ispadnu pod "Strana 0".
-                obogatiTipPoljaPodacima(stavke, Komunikacija.getInstanca().vratiSveTipovePolja());
-
-                stavke.sort(Comparator.comparingInt(
-                        (StavkeObrasca s) -> s.getIdPolja() != null ? s.getIdPolja().getStranica() : 1)
-                        .thenComparingInt(s -> s.getIdPolja() != null ? s.getIdPolja().getRedosledObrade() : 0));
-
-                return new Object[]{prikaz, stavke};
-            }
-
-            @Override protected void done() {
-                forma.setCursor(java.awt.Cursor.getDefaultCursor());
-                try {
-                    Object[] rezultat = get();
-                    ocr.OcrPrikaz prikaz = (ocr.OcrPrikaz) rezultat[0];
-                    @SuppressWarnings("unchecked")
-                    List<StavkeObrasca> stavke = (List<StavkeObrasca>) rezultat[1];
-
-                    if (stavke.isEmpty()) {
-                        JOptionPane.showMessageDialog(forma,
-                                "Za ovaj obrazac još nema OCR stavki. Pokreni OCR analizu.",
-                                "Informacija", JOptionPane.INFORMATION_MESSAGE);
-                        return;
-                    }
-
-                    obrazacUPregledu = obrazac;
-                    stavkeUPregledu = stavke;
-
-                    stranaPregled = 1;
-                    maxStranaPregled = prikaz.getBrojStrana();
-                    forma.prikaziSliku(prikaz.getSlika(), forma.getLblSlikaPregled());
-                    forma.getLblStranaPregled().setText("Strana 1 od " + maxStranaPregled);
-                    forma.getBtnPrethodnaStranaPregled().setEnabled(false);
-                    forma.getBtnSledecaStranaPregled().setEnabled(maxStranaPregled > 1);
-
-                    forma.prikaziStavke(stavkeZaStranu(1), 1);
-                    forma.getLblSazetakPregled().setText(sazetakStavki(stavke));
-                    forma.prikaziKarticu(SV20ObrazacForma.KARTICA_PREGLED);
-
-                } catch (Exception ex) {
-                    Throwable uzrok = ex.getCause() != null ? ex.getCause() : ex;
-                    JOptionPane.showMessageDialog(forma,
-                            "Ne mogu da otvorim OCR pregled: " + uzrok.getMessage()
-                            + "\n\nProverite da li je OCR servis pokrenut na http://localhost:9001",
                             "Greška", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -595,11 +572,8 @@ public class SV20ObrazacController {
 
         String putanja = normalizujPutanju(obrazacZaObradu.getPutanjaDoFajla());
         if (putanja == null || putanja.isEmpty()) {
-            putanja = normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim());
-        }
-        if (putanja == null || putanja.isEmpty()) {
             JOptionPane.showMessageDialog(forma,
-                    "Unesite ili odaberite putanju do fajla pre pokretanja OCR analize!",
+                    "Dodajte sliku pre pokretanja OCR analize!",
                     "Upozorenje", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -608,8 +582,7 @@ public class SV20ObrazacController {
         if (!fajl.exists()) {
             JOptionPane.showMessageDialog(forma,
                     "Fajl nije pronađen:\n" + putanja
-                    + "\n\nAko je putanja sačuvana pre poslednje popravke, ponovo odaberi fajl\n"
-                    + "dugmetom \"Odaberi fajl...\" i sačuvaj obrazac.",
+                    + "\n\nDodajte sliku ponovo dugmetom \"Dodaj sliku\".",
                     "Greška", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -723,21 +696,12 @@ public class SV20ObrazacController {
 
     private void ocisti() {
         if (forma.getCmbStudent().getItemCount() > 0) forma.getCmbStudent().setSelectedIndex(0);
-        if (forma.getCmbZaposleni().getItemCount() > 0) forma.getCmbZaposleni().setSelectedIndex(0);
         forma.getSpnSkolskaGodina().setValue(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR));
         forma.getSpnSemestar().setValue(1);
         forma.getCmbStatus().setSelectedIndex(0);
-        forma.getTxtPutanjaFajla().setText("");
         forma.setSelektovaniObrazac(null);
         forma.getTblObrasci().clearSelection();
         forma.prikaziRezimUnosa(true);
-        forma.getLblSlikaLista().setIcon(null);
-        forma.getLblSlikaLista().setText("Fajl nije izabran");
-        forma.getLblStranaLista().setText("—");
-        forma.getBtnPrethodnaStranaLista().setEnabled(false);
-        forma.getBtnSledecaStranaLista().setEnabled(false);
-        forma.getLblSazetakStavki().setText("Izaberite obrazac iz liste da vidite OCR stavke.");
-        forma.getBtnPregledajStavke().setEnabled(false);
     }
 
     private void popuniFormu() {
@@ -755,7 +719,6 @@ public class SV20ObrazacController {
             forma.getSpnSkolskaGodina().setValue(o.getSkolskaGodina());
             forma.getSpnSemestar().setValue(o.getSemestar());
             forma.getCmbStatus().setSelectedItem(o.getStatus());
-            if (o.getPutanjaDoFajla() != null) { forma.getTxtPutanjaFajla().setText(o.getPutanjaDoFajla()); }
 
             String indeksStudenta = o.getIndeks() != null ? o.getIndeks().getIndeks() : null;
             for (int i = 0; i < forma.getCmbStudent().getItemCount(); i++) {
@@ -767,30 +730,15 @@ public class SV20ObrazacController {
                 }
             }
 
-            Integer idZaposlenog = o.getIdZaposlenog() != null ? o.getIdZaposlenog().getIdZaposlenog() : null;
-            for (int i = 0; i < forma.getCmbZaposleni().getItemCount(); i++) {
-                ZaposleniFakulteta z = forma.getCmbZaposleni().getItemAt(i);
-                if (idZaposlenog != null && z.getIdZaposlenog() == idZaposlenog) {
-                    forma.getCmbZaposleni().setSelectedIndex(i);
-                    o.setIdZaposlenog(z); // puni objekat iz combo-a (server vraca samo ID)
+            for (ZaposleniFakulteta z : sviZaposleni) {
+                if (o.getIdZaposlenog() != null && z.getIdZaposlenog() == o.getIdZaposlenog().getIdZaposlenog()) {
+                    o.setIdZaposlenog(z); // puni objekat (server vraca samo ID)
                     break;
                 }
             }
 
             forma.setSelektovaniObrazac(o);
             forma.prikaziRezimUnosa(false);
-
-            if (o.isOcrIzvrseno()) {
-                forma.getLblSazetakStavki().setText("Obrazac #" + o.getIdObrazac() + " — OCR obrađen. Klikni da pregledaš i koriguješ stavke.");
-                forma.getBtnPregledajStavke().setEnabled(true);
-            } else {
-                forma.getLblSazetakStavki().setText("OCR još nije pokrenut za ovaj obrazac.");
-                forma.getBtnPregledajStavke().setEnabled(false);
-            }
-
-            if (o.getPutanjaDoFajla() != null && !o.getPutanjaDoFajla().isEmpty()) {
-                ucitajPrikazListe(normalizujPutanju(o.getPutanjaDoFajla()));
-            }
         }
     }
 
@@ -801,18 +749,13 @@ public class SV20ObrazacController {
         return null;
     }
 
-    /** Prazan string tretiramo kao "nema skena" (SQL NULL), ne kao stvarnu vrednost. */
-    private static String naPrazno(String s) {
-        return (s == null || s.isEmpty()) ? null : s;
-    }
-
     private boolean validirajPodatke(Student student, ZaposleniFakulteta zaposleni) {
         if (student == null) {
             JOptionPane.showMessageDialog(forma, "Student je obavezan!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
             return false;
         }
         if (zaposleni == null) {
-            JOptionPane.showMessageDialog(forma, "Zaposleni je obavezan!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(forma, "Greška: nema ulogovanog zaposlenog!", "Greška", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;

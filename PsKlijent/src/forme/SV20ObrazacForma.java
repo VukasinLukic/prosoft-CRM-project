@@ -7,47 +7,45 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 public class SV20ObrazacForma extends JPanel {
 
-    // ── Kartica "Lista/unos" ─────────────────────────────────────────────────
+    // ── Kartica "Lista/unos" — čisto upravljanje osnovnim podacima obrasca ──
     private JComboBox cmbStudent;
-    private JComboBox cmbZaposleni;
     private JComboBox cmbStatus;
     private JComboBox cmbKriterijum;
     private JSpinner spnSkolskaGodina;
     private JSpinner spnSemestar;
-    private JTextField txtPutanjaFajla;
     private JTextField txtPretraga;
     private JScrollPane jScrollPane1;
     private JTable tblObrasci;
-    private JButton btnOdaberiFajl;
     private JButton btnDodaj;
     private JButton btnSacuvaj;
     private JButton btnObrisi;
     private JButton btnOcisti;
     private JButton btnPretrazi;
-    private JButton btnPokreniOcr;
-    private JButton btnPregledajStavke;
-    private JLabel lblSazetakStavki;
-    private JLabel lblSlikaLista;
-    private JLabel lblStranaLista;
-    private JButton btnPrethodnaStranaLista;
-    private JButton btnSledecaStranaLista;
 
-    // ── Kartica "OCR pregled" ────────────────────────────────────────────────
+    // ── Kartica "OCR pregled" — sken + OCR + korekcija za JEDAN obrazac ──────
     private JLabel lblSlikaPregled;
     private JLabel lblStranaPregled;
     private JButton btnPrethodnaStranaPregled;
     private JButton btnSledecaStranaPregled;
+    private JButton btnDodajSliku;
+    private JButton btnPokreniOcr;
     private JLabel lblSazetakPregled;
     private JPanel pnlStavke;
     private JPanel poljaPanel;
     private JButton btnNazad;
     private JButton btnSacuvajStavke;
-    private JButton btnPonoviOcr;
+
+    private CardLayout slikaCardLayout;
+    private JPanel slikaCardsPanel;
+    private static final String SLIKA_PRAZNO = "PRAZNO";
+    private static final String SLIKA_UCITANA = "UCITANA";
 
     private final Map<Integer, JTextField> poljaZaKorekciju = new LinkedHashMap<>();
 
@@ -93,30 +91,23 @@ public class SV20ObrazacForma extends JPanel {
 
     private JPanel izgradiKarticuListe() {
         cmbStudent = new JComboBox();
-        cmbZaposleni = new JComboBox();
         cmbStatus = new JComboBox();
         cmbKriterijum = new JComboBox(new String[]{"Indeks studenta", "Zaposleni", "Status"});
         spnSkolskaGodina = new JSpinner(new SpinnerNumberModel(
                 java.util.Calendar.getInstance().get(java.util.Calendar.YEAR), 2000, 2100, 1));
         spnSemestar = new JSpinner(new SpinnerNumberModel(1, 1, 12, 1));
-        txtPutanjaFajla = new JTextField();
         txtPretraga = new JTextField();
 
         tblObrasci = new JTable();
         jScrollPane1 = new JScrollPane(tblObrasci);
 
-        btnOdaberiFajl = dugme("Odaberi fajl...", new Color(97, 97, 97), false);
         btnDodaj = dugme("Dodaj obrazac", new Color(38, 70, 110), true);
         btnSacuvaj = dugme("Sačuvaj izmene", OK, true);
         btnObrisi = dugme("Obriši", BAD, false);
         btnOcisti = ghostDugme("Očisti formu");
         btnPretrazi = dugme("Pretraži", new Color(38, 70, 110), false);
 
-        btnPokreniOcr = dugme("Obradi OCR", new Color(180, 90, 20), true);
-        btnPokreniOcr.setPreferredSize(new Dimension(170, 36));
-        btnPokreniOcr.setToolTipText("Šalje ceo fajl (obe strane) OCR servisu i otvara pregled za korekciju");
-
-        // ── Podaci o obrascu ─────────────────────────────────────────────────
+        // ── Podaci o obrascu — samo osnovni podaci, bez skena/OCR-a ──────────
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.WHITE);
         formPanel.setBorder(naslovljenaIvica("Podaci o obrascu"));
@@ -127,18 +118,11 @@ public class SV20ObrazacForma extends JPanel {
         g.gridx = 0; g.gridy = 0; g.fill = GridBagConstraints.NONE;
         formPanel.add(new JLabel("Student:"), g);
         g.gridx = 1; g.fill = GridBagConstraints.HORIZONTAL; g.weightx = 1; g.gridwidth = 3;
-        cmbStudent.setPreferredSize(new Dimension(240, 28));
+        cmbStudent.setPreferredSize(new Dimension(280, 28));
         formPanel.add(cmbStudent, g);
         g.weightx = 0; g.gridwidth = 1;
 
         g.gridx = 0; g.gridy = 1; g.fill = GridBagConstraints.NONE;
-        formPanel.add(new JLabel("Zaposleni:"), g);
-        g.gridx = 1; g.fill = GridBagConstraints.HORIZONTAL; g.weightx = 1; g.gridwidth = 3;
-        cmbZaposleni.setPreferredSize(new Dimension(240, 28));
-        formPanel.add(cmbZaposleni, g);
-        g.weightx = 0; g.gridwidth = 1;
-
-        g.gridx = 0; g.gridy = 2; g.fill = GridBagConstraints.NONE;
         formPanel.add(new JLabel("Školska godina:"), g);
         g.gridx = 1; g.fill = GridBagConstraints.HORIZONTAL;
         spnSkolskaGodina.setPreferredSize(new Dimension(100, 28));
@@ -149,26 +133,11 @@ public class SV20ObrazacForma extends JPanel {
         spnSemestar.setPreferredSize(new Dimension(80, 28));
         formPanel.add(spnSemestar, g);
 
-        g.gridx = 0; g.gridy = 3; g.fill = GridBagConstraints.NONE; g.weightx = 0;
+        g.gridx = 0; g.gridy = 2; g.fill = GridBagConstraints.NONE; g.weightx = 0;
         formPanel.add(new JLabel("Status:"), g);
         g.gridx = 1; g.fill = GridBagConstraints.HORIZONTAL;
         cmbStatus.setPreferredSize(new Dimension(240, 28));
         formPanel.add(cmbStatus, g);
-
-        g.gridx = 0; g.gridy = 4; g.fill = GridBagConstraints.NONE; g.weightx = 0;
-        formPanel.add(new JLabel("Sken (PDF, obe strane):"), g);
-        g.gridx = 1; g.fill = GridBagConstraints.HORIZONTAL; g.weightx = 1; g.gridwidth = 2;
-        txtPutanjaFajla.setPreferredSize(new Dimension(300, 28));
-        formPanel.add(txtPutanjaFajla, g);
-        g.gridwidth = 1; g.weightx = 0; g.fill = GridBagConstraints.NONE;
-        g.gridx = 3;
-        formPanel.add(btnOdaberiFajl, g);
-
-        g.gridx = 0; g.gridy = 5; g.gridwidth = 4; g.fill = GridBagConstraints.NONE;
-        g.insets = new Insets(12, 8, 5, 8);
-        formPanel.add(btnPokreniOcr, g);
-        g.gridwidth = 1;
-        g.insets = new Insets(5, 8, 5, 8);
 
         JPanel crudPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         crudPanel.setBackground(Color.WHITE);
@@ -186,40 +155,6 @@ public class SV20ObrazacForma extends JPanel {
         formWithButtons.add(formPanel, BorderLayout.CENTER);
         formWithButtons.add(crudPanel, BorderLayout.SOUTH);
 
-        // ── Pregled skena (desno) ────────────────────────────────────────────
-        JPanel previewPanel = new JPanel(new BorderLayout(0, 6));
-        previewPanel.setBackground(Color.WHITE);
-        previewPanel.setBorder(naslovljenaIvica("Pregled skeniranog obrasca"));
-
-        lblSlikaLista = new JLabel("Fajl nije izabran", SwingConstants.CENTER);
-        lblSlikaLista.setForeground(TEXT_MUTED);
-        lblSlikaLista.setVerticalAlignment(SwingConstants.CENTER);
-        JScrollPane slikaScroll = new JScrollPane(lblSlikaLista);
-        slikaScroll.setBorder(BorderFactory.createLineBorder(BORDER));
-        slikaScroll.setPreferredSize(new Dimension(400, 420));
-
-        btnPrethodnaStranaLista = ikonicaDugme("‹");
-        btnSledecaStranaLista = ikonicaDugme("›");
-        lblStranaLista = new JLabel("—", SwingConstants.CENTER);
-        lblStranaLista.setPreferredSize(new Dimension(110, 24));
-        lblStranaLista.setForeground(TEXT_MUTED);
-        btnPrethodnaStranaLista.setEnabled(false);
-        btnSledecaStranaLista.setEnabled(false);
-
-        JPanel flipPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 2));
-        flipPanel.setBackground(Color.WHITE);
-        flipPanel.add(btnPrethodnaStranaLista);
-        flipPanel.add(lblStranaLista);
-        flipPanel.add(btnSledecaStranaLista);
-
-        previewPanel.add(slikaScroll, BorderLayout.CENTER);
-        previewPanel.add(flipPanel, BorderLayout.SOUTH);
-
-        JPanel k1Grid = new JPanel(new GridLayout(1, 2, 12, 0));
-        k1Grid.setBackground(Color.WHITE);
-        k1Grid.add(formWithButtons);
-        k1Grid.add(previewPanel);
-
         // ── Pretraga — direktno iznad liste obrazaca ─────────────────────────
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
         searchPanel.setBackground(Color.WHITE);
@@ -232,48 +167,26 @@ public class SV20ObrazacForma extends JPanel {
         // ── Lista obrazaca ───────────────────────────────────────────────────
         JPanel obrazaciPanel = new JPanel(new BorderLayout(0, 4));
         obrazaciPanel.setBackground(Color.WHITE);
-        obrazaciPanel.setBorder(naslovljenaIvica("Lista obrazaca  (najnoviji prvi · dvostruki klik = otvori OCR pregled)"));
-        jScrollPane1.setPreferredSize(new Dimension(1100, 260));
+        obrazaciPanel.setBorder(naslovljenaIvica("Lista obrazaca  (najnoviji prvi · dvostruki klik = otvori obrazac)"));
+        jScrollPane1.setPreferredSize(new Dimension(1100, 300));
         obrazaciPanel.add(searchPanel, BorderLayout.NORTH);
         obrazaciPanel.add(jScrollPane1, BorderLayout.CENTER);
 
-        // ── Sažetak stavki (zamenjuje staru tabelu stavki) ───────────────────
-        JPanel summaryPanel = new JPanel(new BorderLayout(10, 0));
-        summaryPanel.setBackground(new Color(246, 248, 250));
-        summaryPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(BORDER),
-                new EmptyBorder(10, 12, 10, 12)));
-        lblSazetakStavki = new JLabel("Izaberite obrazac iz liste da vidite OCR stavke.");
-        lblSazetakStavki.setForeground(TEXT_MUTED);
-        btnPregledajStavke = dugme("Pregledaj OCR stavke", new Color(38, 70, 110), false);
-        btnPregledajStavke.setEnabled(false);
-        summaryPanel.add(lblSazetakStavki, BorderLayout.CENTER);
-        summaryPanel.add(btnPregledajStavke, BorderLayout.EAST);
-
-        JPanel kartica = new JPanel(new BorderLayout(4, 8));
+        JPanel kartica = new JPanel(new BorderLayout(0, 10));
         kartica.setBackground(Color.WHITE);
         kartica.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JPanel gornjiDeo = new JPanel(new BorderLayout(0, 10));
+        JPanel gornjiDeo = new JPanel(new BorderLayout(0, 8));
         gornjiDeo.setBackground(Color.WHITE);
         gornjiDeo.add(naslov("Upravljanje ŠV-20 obrascima"), BorderLayout.NORTH);
-        gornjiDeo.add(k1Grid, BorderLayout.CENTER);
+        gornjiDeo.add(formWithButtons, BorderLayout.CENTER);
 
-        JPanel donjiDeo = new JPanel(new BorderLayout(0, 8));
-        donjiDeo.setBackground(Color.WHITE);
-        donjiDeo.add(obrazaciPanel, BorderLayout.CENTER);
-        donjiDeo.add(summaryPanel, BorderLayout.SOUTH);
-
-        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, gornjiDeo, donjiDeo);
-        split.setDividerLocation(440);
-        split.setResizeWeight(0.55);
-        split.setBorder(null);
-
-        kartica.add(split, BorderLayout.CENTER);
+        kartica.add(gornjiDeo, BorderLayout.NORTH);
+        kartica.add(obrazaciPanel, BorderLayout.CENTER);
         return kartica;
     }
 
-    // ── Kartica 2: OCR pregled ───────────────────────────────────────────────
+    // ── Kartica 2: OCR pregled (sken + OCR + korekcija za jedan obrazac) ─────
 
     private JPanel izgradiKarticuPregleda() {
         JPanel kartica = new JPanel(new BorderLayout(0, 8));
@@ -281,34 +194,21 @@ public class SV20ObrazacForma extends JPanel {
         kartica.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         lblSazetakPregled = new JLabel(" ");
-        lblSazetakPregled.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblSazetakPregled.setForeground(TEXT_MUTED);
+        lblSazetakPregled.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblSazetakPregled.setForeground(ACCENT);
         lblSazetakPregled.setBorder(new EmptyBorder(2, 4, 6, 4));
 
-        // ── Slika (levo) ─────────────────────────────────────────────────────
-        JPanel slikaPanel = new JPanel(new BorderLayout(0, 6));
+        // ── Slika (levo) — prazno stanje ILI učitana slika ──────────────────
+        JPanel slikaPanel = new JPanel(new BorderLayout());
         slikaPanel.setBackground(Color.WHITE);
         slikaPanel.setBorder(naslovljenaIvica("Skenirani obrazac"));
 
-        lblSlikaPregled = new JLabel("", SwingConstants.CENTER);
-        lblSlikaPregled.setForeground(TEXT_MUTED);
-        JScrollPane slikaScroll = new JScrollPane(lblSlikaPregled);
-        slikaScroll.setBorder(BorderFactory.createLineBorder(BORDER));
-
-        btnPrethodnaStranaPregled = ikonicaDugme("‹");
-        btnSledecaStranaPregled = ikonicaDugme("›");
-        lblStranaPregled = new JLabel("—", SwingConstants.CENTER);
-        lblStranaPregled.setPreferredSize(new Dimension(110, 24));
-        lblStranaPregled.setForeground(TEXT_MUTED);
-
-        JPanel flipPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 2));
-        flipPanel.setBackground(Color.WHITE);
-        flipPanel.add(btnPrethodnaStranaPregled);
-        flipPanel.add(lblStranaPregled);
-        flipPanel.add(btnSledecaStranaPregled);
-
-        slikaPanel.add(slikaScroll, BorderLayout.CENTER);
-        slikaPanel.add(flipPanel, BorderLayout.SOUTH);
+        slikaCardLayout = new CardLayout();
+        slikaCardsPanel = new JPanel(slikaCardLayout);
+        slikaCardsPanel.setBackground(Color.WHITE);
+        slikaCardsPanel.add(izgradiPraznoStanjeSlike(), SLIKA_PRAZNO);
+        slikaCardsPanel.add(izgradiUcitanoStanjeSlike(), SLIKA_UCITANA);
+        slikaPanel.add(slikaCardsPanel, BorderLayout.CENTER);
 
         // ── Polja (desno) — samo polja trenutno prikazane strane ────────────
         poljaPanel = new JPanel(new BorderLayout());
@@ -331,7 +231,6 @@ public class SV20ObrazacForma extends JPanel {
 
         // ── Dugmad ───────────────────────────────────────────────────────────
         btnNazad = ghostDugme("‹ Nazad na obrazac");
-        btnPonoviOcr = ghostDugme("Ponovi OCR");
         btnSacuvajStavke = dugme("Sačuvaj stavke", OK, true);
 
         JPanel akcijePanel = new JPanel(new BorderLayout());
@@ -339,15 +238,8 @@ public class SV20ObrazacForma extends JPanel {
         akcijePanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, BORDER),
                 new EmptyBorder(10, 0, 0, 0)));
-        JPanel levo = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        levo.setBackground(Color.WHITE);
-        levo.add(btnNazad);
-        levo.add(btnPonoviOcr);
-        JPanel desno = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        desno.setBackground(Color.WHITE);
-        desno.add(btnSacuvajStavke);
-        akcijePanel.add(levo, BorderLayout.WEST);
-        akcijePanel.add(desno, BorderLayout.EAST);
+        akcijePanel.add(btnNazad, BorderLayout.WEST);
+        akcijePanel.add(btnSacuvajStavke, BorderLayout.EAST);
 
         kartica.add(lblSazetakPregled, BorderLayout.NORTH);
         kartica.add(split, BorderLayout.CENTER);
@@ -355,13 +247,89 @@ public class SV20ObrazacForma extends JPanel {
         return kartica;
     }
 
+    private JPanel izgradiPraznoStanjeSlike() {
+        JPanel prazno = new JPanel();
+        prazno.setBackground(Color.WHITE);
+        prazno.setLayout(new BoxLayout(prazno, BoxLayout.Y_AXIS));
+        prazno.setBorder(new EmptyBorder(60, 20, 60, 20));
+
+        JLabel poruka = new JLabel("Nema priložene slike — dodajte sken da pokrenete OCR", SwingConstants.CENTER);
+        poruka.setForeground(TEXT_MUTED);
+        poruka.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        poruka.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        btnDodajSliku = dugme("Dodaj sliku", new Color(38, 70, 110), true);
+        btnDodajSliku.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        prazno.add(poruka);
+        prazno.add(Box.createVerticalStrut(16));
+        prazno.add(btnDodajSliku);
+        return prazno;
+    }
+
+    private JPanel izgradiUcitanoStanjeSlike() {
+        JPanel ucitano = new JPanel(new BorderLayout(0, 6));
+        ucitano.setBackground(Color.WHITE);
+
+        lblSlikaPregled = new JLabel("", SwingConstants.CENTER);
+        lblSlikaPregled.setForeground(TEXT_MUTED);
+        JScrollPane slikaScroll = new JScrollPane(lblSlikaPregled);
+        slikaScroll.setBorder(BorderFactory.createLineBorder(BORDER));
+
+        btnPrethodnaStranaPregled = ikonicaDugme("‹");
+        btnSledecaStranaPregled = ikonicaDugme("›");
+        lblStranaPregled = new JLabel("—", SwingConstants.CENTER);
+        lblStranaPregled.setPreferredSize(new Dimension(110, 24));
+        lblStranaPregled.setForeground(TEXT_MUTED);
+
+        JPanel flipPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 2));
+        flipPanel.setBackground(Color.WHITE);
+        flipPanel.add(btnPrethodnaStranaPregled);
+        flipPanel.add(lblStranaPregled);
+        flipPanel.add(btnSledecaStranaPregled);
+
+        btnPokreniOcr = dugme("Obradi OCR", new Color(180, 90, 20), true);
+        btnPokreniOcr.setToolTipText("Šalje ceo fajl (obe strane) OCR servisu i popunjava polja desno");
+        JPanel ocrDugmePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 6));
+        ocrDugmePanel.setBackground(Color.WHITE);
+        ocrDugmePanel.add(btnPokreniOcr);
+
+        JPanel donjiDeo = new JPanel(new BorderLayout());
+        donjiDeo.setBackground(Color.WHITE);
+        donjiDeo.add(flipPanel, BorderLayout.NORTH);
+        donjiDeo.add(ocrDugmePanel, BorderLayout.SOUTH);
+
+        ucitano.add(slikaScroll, BorderLayout.CENTER);
+        ucitano.add(donjiDeo, BorderLayout.SOUTH);
+        return ucitano;
+    }
+
+    /** Prebacuje levi panel između "nema slike" i "slika + OCR dugme" stanja. */
+    public void prikaziStanjeSlike(boolean postojiSlika) {
+        slikaCardLayout.show(slikaCardsPanel, postojiSlika ? SLIKA_UCITANA : SLIKA_PRAZNO);
+    }
+
+    /** "Obradi OCR" pre prvog pokretanja, "Ponovi OCR" posle — isto dugme, ista akcija. */
+    public void postaviTekstDugmetaOcr(boolean vecObradjeno) {
+        btnPokreniOcr.setText(vecObradjeno ? "Ponovi OCR" : "Obradi OCR");
+    }
+
     /** Prikazuje SAMO polja trenutno izabrane strane (lista je već filtrirana od strane kontrolera). */
     public void prikaziStavke(List<domen.StavkeObrasca> stavkeZaStranu, int strana) {
         poljaPanel.setBorder(naslovljenaIvica("Prepoznata polja — strana " + strana));
         pnlStavke.removeAll();
         poljaZaKorekciju.clear();
-        for (domen.StavkeObrasca s : stavkeZaStranu) {
-            pnlStavke.add(redPolja(s));
+
+        if (stavkeZaStranu.isEmpty()) {
+            JLabel prazno = new JLabel("Pokreni OCR da bi se prepoznala polja obrasca.");
+            prazno.setForeground(TEXT_MUTED);
+            prazno.setBorder(new EmptyBorder(20, 8, 8, 8));
+            prazno.setAlignmentX(Component.LEFT_ALIGNMENT);
+            pnlStavke.add(prazno);
+        } else {
+            for (domen.StavkeObrasca s : stavkeZaStranu) {
+                pnlStavke.add(redPolja(s));
+            }
         }
         pnlStavke.add(Box.createVerticalGlue());
         pnlStavke.revalidate();
@@ -372,6 +340,7 @@ public class SV20ObrazacForma extends JPanel {
         String naziv = s.getIdPolja() != null ? s.getIdPolja().getNazivPolja() : "?";
         double pouzdanost = s.getNivoPodudarnosti();
         Color boja = pouzdanost >= 85 ? OK : (pouzdanost >= 60 ? WARN : BAD);
+        String ocrOriginal = s.getOcrVrednost() != null ? s.getOcrVrednost().trim() : "";
 
         JPanel red = new JPanel(new BorderLayout(10, 0));
         red.setBackground(Color.WHITE);
@@ -394,6 +363,17 @@ public class SV20ObrazacForma extends JPanel {
         lblBadge.setPreferredSize(new Dimension(52, 24));
         lblBadge.setForeground(boja);
         lblBadge.setFont(new Font("SansSerif", Font.BOLD, 11));
+        // Čim korisnik ručno promeni vrednost, procenat pouzdanosti OCR-a više nije relevantan
+        // za TO polje (vrednost je sad ljudski potvrđena, ne OCR pogodak) — sakrij samo tu značku.
+        txt.getDocument().addDocumentListener(new DocumentListener() {
+            private void osveziBadge() {
+                boolean izmenjeno = !txt.getText().trim().equals(ocrOriginal);
+                lblBadge.setVisible(!izmenjeno);
+            }
+            @Override public void insertUpdate(DocumentEvent e) { osveziBadge(); }
+            @Override public void removeUpdate(DocumentEvent e) { osveziBadge(); }
+            @Override public void changedUpdate(DocumentEvent e) { osveziBadge(); }
+        });
 
         red.add(lblNaziv, BorderLayout.WEST);
         red.add(txt, BorderLayout.CENTER);
@@ -419,7 +399,7 @@ public class SV20ObrazacForma extends JPanel {
         return poljaZaKorekciju;
     }
 
-    // ── Prikaz slike (koristi ista kartica 1 i kartica 2) ───────────────────
+    // ── Prikaz slike ─────────────────────────────────────────────────────────
 
     public void prikaziSliku(BufferedImage slika, JLabel meta) {
         if (slika == null) {
@@ -427,9 +407,8 @@ public class SV20ObrazacForma extends JPanel {
             meta.setText("Nema slike za prikaz");
             return;
         }
-        // Iskoristi stvarnu širinu okvira u kom slika sedi (u OCR pregledu je to ~50% ekrana,
-        // u kartici "Lista" je to fiksni pregled-okvir) — bez ovoga slika u pregledu ostaje
-        // mala čak i kad joj je split dao mnogo više prostora.
+        // Iskoristi stvarnu širinu okvira u kom slika sedi (u OCR pregledu je to ~50% ekrana) —
+        // bez ovoga slika ostaje mala čak i kad joj je split dao mnogo više prostora.
         int maxSirina = 390;
         Container roditelj = meta.getParent();
         if (roditelj != null && roditelj.getWidth() > 80) {
@@ -445,13 +424,11 @@ public class SV20ObrazacForma extends JPanel {
         meta.setIcon(new ImageIcon(skalirana));
     }
 
-    public JLabel getLblSlikaLista() { return lblSlikaLista; }
     public JLabel getLblSlikaPregled() { return lblSlikaPregled; }
-    public JLabel getLblStranaLista() { return lblStranaLista; }
     public JLabel getLblStranaPregled() { return lblStranaPregled; }
-    public JLabel getLblSazetakStavki() { return lblSazetakStavki; }
     public JLabel getLblSazetakPregled() { return lblSazetakPregled; }
-    public JButton getBtnPregledajStavke() { return btnPregledajStavke; }
+    public JButton getBtnPrethodnaStranaPregled() { return btnPrethodnaStranaPregled; }
+    public JButton getBtnSledecaStranaPregled() { return btnSledecaStranaPregled; }
 
     /** true = ništa nije selektovano (prikaži "Dodaj obrazac"); false = red je selektovan
      *  (prikaži "Sačuvaj izmene" + "Obriši"). "Očisti formu" je uvek vidljivo. */
@@ -460,10 +437,6 @@ public class SV20ObrazacForma extends JPanel {
         btnSacuvaj.setVisible(!noviZapis);
         btnObrisi.setVisible(!noviZapis);
     }
-    public JButton getBtnPrethodnaStranaLista() { return btnPrethodnaStranaLista; }
-    public JButton getBtnSledecaStranaLista() { return btnSledecaStranaLista; }
-    public JButton getBtnPrethodnaStranaPregled() { return btnPrethodnaStranaPregled; }
-    public JButton getBtnSledecaStranaPregled() { return btnSledecaStranaPregled; }
 
     // ── Zajednički izgled ─────────────────────────────────────────────────────
 
@@ -596,11 +569,9 @@ public class SV20ObrazacForma extends JPanel {
     public JTable getTblObrasci() { return tblObrasci; }
     public DefaultTableModel getTableModelObrasci() { return tableModelObrasci; }
     public JComboBox<domen.Student> getCmbStudent() { return cmbStudent; }
-    public JComboBox<domen.ZaposleniFakulteta> getCmbZaposleni() { return cmbZaposleni; }
     public JSpinner getSpnSkolskaGodina() { return spnSkolskaGodina; }
     public JSpinner getSpnSemestar() { return spnSemestar; }
     public JComboBox<domen.Status> getCmbStatus() { return cmbStatus; }
-    public JTextField getTxtPutanjaFajla() { return txtPutanjaFajla; }
     public JTextField getTxtPretraga() { return txtPretraga; }
     public JComboBox<String> getCmbKriterijum() { return cmbKriterijum; }
     public domen.SV20Obrazac getSelektovaniObrazac() { return selektovaniObrazac; }
@@ -611,14 +582,10 @@ public class SV20ObrazacForma extends JPanel {
     public void addObrisiListener(java.awt.event.ActionListener l) { btnObrisi.addActionListener(l); }
     public void addOcistiListener(java.awt.event.ActionListener l) { btnOcisti.addActionListener(l); }
     public void addPretraziListener(java.awt.event.ActionListener l) { btnPretrazi.addActionListener(l); }
-    public void addOdaberiFajlListener(java.awt.event.ActionListener l) { btnOdaberiFajl.addActionListener(l); }
+    public void addDodajSlikuListener(java.awt.event.ActionListener l) { btnDodajSliku.addActionListener(l); }
     public void addPokreniOcrListener(java.awt.event.ActionListener l) { btnPokreniOcr.addActionListener(l); }
-    public void addPregledajStavkeListener(java.awt.event.ActionListener l) { btnPregledajStavke.addActionListener(l); }
     public void addNazadListener(java.awt.event.ActionListener l) { btnNazad.addActionListener(l); }
     public void addSacuvajStavkeListener(java.awt.event.ActionListener l) { btnSacuvajStavke.addActionListener(l); }
-    public void addPonoviOcrListener(java.awt.event.ActionListener l) { btnPonoviOcr.addActionListener(l); }
-    public void addPrethodnaStranaListaListener(java.awt.event.ActionListener l) { btnPrethodnaStranaLista.addActionListener(l); }
-    public void addSledecaStranaListaListener(java.awt.event.ActionListener l) { btnSledecaStranaLista.addActionListener(l); }
     public void addPrethodnaStranaPregledListener(java.awt.event.ActionListener l) { btnPrethodnaStranaPregled.addActionListener(l); }
     public void addSledecaStranaPregledListener(java.awt.event.ActionListener l) { btnSledecaStranaPregled.addActionListener(l); }
 
