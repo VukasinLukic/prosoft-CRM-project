@@ -39,9 +39,9 @@ public class KreirajSV20ObrazacOperacija extends ApstraktnaGenerickaOperacija {
         if (o.getStatus() == null) {
             throw new Exception("Status je obavezan!");
         }
-        if (o.getPutanjaDoFajla() == null || o.getPutanjaDoFajla().isEmpty()) {
-            throw new Exception("Putanja do fajla je obavezna!");
-        }
+        // Putanja do fajla NIJE obavezna ovde — obrazac sme da postoji pre nego što je
+        // sken fizički priložen (prilaže se naknadno preko "Odaberi fajl..." + izmena).
+        // OCR dugmad u klijentu i dalje zahtevaju putanju pre nego što se OCR pokrene.
     }
 
     @Override

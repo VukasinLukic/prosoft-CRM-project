@@ -6,11 +6,15 @@ import javax.swing.border.*;
 
 public class LoginForma extends JFrame {
 
-    private JLabel lblUsername;
-    private JLabel lblPassword;
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnUlogujSe;
+
+    private static final Color BG = new Color(15, 23, 42);
+    private static final Color CARD_BG = Color.WHITE;
+    private static final Color ACCENT = new Color(21, 101, 192);
+    private static final Color BORDER = new Color(210, 216, 226);
+    private static final Color TEXT_MUTED = new Color(148, 163, 184);
 
     public LoginForma() {
         initComponents();
@@ -19,85 +23,87 @@ public class LoginForma extends JFrame {
     private void initComponents() {
         setTitle("ŠV-20 Sistem — Prijava");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setResizable(false);
 
-        // Header
-        JPanel headerPanel = new JPanel(new GridLayout(2, 1, 0, 6));
-        headerPanel.setBackground(new Color(21, 101, 192));
-        headerPanel.setBorder(new EmptyBorder(28, 30, 28, 30));
+        JPanel pozadina = new JPanel(new GridBagLayout());
+        pozadina.setBackground(BG);
 
-        JLabel titleLabel = new JLabel("ŠV-20 Sistem", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 26));
-        titleLabel.setForeground(Color.WHITE);
+        JPanel karta = new JPanel();
+        karta.setLayout(new BoxLayout(karta, BoxLayout.Y_AXIS));
+        karta.setBackground(CARD_BG);
+        karta.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER),
+                new EmptyBorder(40, 44, 36, 44)));
+        karta.setMaximumSize(new Dimension(380, 460));
+        karta.setPreferredSize(new Dimension(380, 420));
 
-        JLabel subtitleLabel = new JLabel("Prijavite se na sistem", SwingConstants.CENTER);
-        subtitleLabel.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        subtitleLabel.setForeground(new Color(187, 222, 251));
+        JLabel eyebrow = new JLabel("FAKULTET ORGANIZACIONIH NAUKA");
+        eyebrow.setFont(new Font("SansSerif", Font.BOLD, 10));
+        eyebrow.setForeground(TEXT_MUTED);
+        eyebrow.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        headerPanel.add(titleLabel);
-        headerPanel.add(subtitleLabel);
+        JLabel naslov = new JLabel("ŠV-20 Sistem");
+        naslov.setFont(new Font("SansSerif", Font.BOLD, 26));
+        naslov.setForeground(new Color(15, 23, 42));
+        naslov.setAlignmentX(Component.LEFT_ALIGNMENT);
+        naslov.setBorder(new EmptyBorder(4, 0, 30, 0));
 
-        // Form
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(Color.WHITE);
-        formPanel.setBorder(new EmptyBorder(30, 50, 10, 50));
+        JLabel lblUsername = poljeLabela("Korisničko ime");
+        txtUsername = poljeUnosa();
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-
-        lblUsername = new JLabel("Korisničko ime");
-        lblUsername.setFont(new Font("SansSerif", Font.BOLD, 12));
-        lblUsername.setForeground(new Color(66, 66, 66));
-        gbc.gridx = 0; gbc.gridy = 0; gbc.insets = new Insets(0, 0, 4, 0);
-        formPanel.add(lblUsername, gbc);
-
-        txtUsername = new JTextField();
-        txtUsername.setPreferredSize(new Dimension(280, 34));
-        txtUsername.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        gbc.gridy = 1; gbc.insets = new Insets(0, 0, 18, 0);
-        formPanel.add(txtUsername, gbc);
-
-        lblPassword = new JLabel("Lozinka");
-        lblPassword.setFont(new Font("SansSerif", Font.BOLD, 12));
-        lblPassword.setForeground(new Color(66, 66, 66));
-        gbc.gridy = 2; gbc.insets = new Insets(0, 0, 4, 0);
-        formPanel.add(lblPassword, gbc);
-
+        JLabel lblPassword = poljeLabela("Lozinka");
         txtPassword = new JPasswordField();
-        txtPassword.setPreferredSize(new Dimension(280, 34));
-        txtPassword.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        gbc.gridy = 3; gbc.insets = new Insets(0, 0, 0, 0);
-        formPanel.add(txtPassword, gbc);
-
-        // Button
-        JPanel btnPanel = new JPanel(new GridBagLayout());
-        btnPanel.setBackground(Color.WHITE);
-        btnPanel.setBorder(new EmptyBorder(18, 50, 30, 50));
+        stilizujPolje(txtPassword);
 
         btnUlogujSe = new JButton("Prijavi se");
-        btnUlogujSe.setPreferredSize(new Dimension(280, 40));
-        btnUlogujSe.setFont(new Font("SansSerif", Font.BOLD, 14));
-        btnUlogujSe.setBackground(new Color(21, 101, 192));
+        btnUlogujSe.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnUlogujSe.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        btnUlogujSe.setBackground(ACCENT);
         btnUlogujSe.setForeground(Color.WHITE);
+        btnUlogujSe.setFont(new Font("SansSerif", Font.BOLD, 13));
         btnUlogujSe.setFocusPainted(false);
+        btnUlogujSe.setBorder(new EmptyBorder(10, 0, 10, 0));
         btnUlogujSe.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        GridBagConstraints gbc2 = new GridBagConstraints();
-        gbc2.fill = GridBagConstraints.HORIZONTAL;
-        gbc2.weightx = 1.0;
-        btnPanel.add(btnUlogujSe, gbc2);
+        karta.add(eyebrow);
+        karta.add(naslov);
+        karta.add(lblUsername);
+        karta.add(Box.createVerticalStrut(6));
+        karta.add(txtUsername);
+        karta.add(Box.createVerticalStrut(18));
+        karta.add(lblPassword);
+        karta.add(Box.createVerticalStrut(6));
+        karta.add(txtPassword);
+        karta.add(Box.createVerticalStrut(26));
+        karta.add(btnUlogujSe);
 
-        JPanel content = new JPanel(new BorderLayout());
-        content.add(headerPanel, BorderLayout.NORTH);
-        content.add(formPanel, BorderLayout.CENTER);
-        content.add(btnPanel, BorderLayout.SOUTH);
+        pozadina.add(karta);
+        setContentPane(pozadina);
 
-        setContentPane(content);
-        pack();
         FormeUtil.otvoriPunEkran(this);
-
         getRootPane().setDefaultButton(btnUlogujSe);
+    }
+
+    private JLabel poljeLabela(String tekst) {
+        JLabel lbl = new JLabel(tekst);
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 11));
+        lbl.setForeground(new Color(71, 85, 105));
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return lbl;
+    }
+
+    private JTextField poljeUnosa() {
+        JTextField f = new JTextField();
+        stilizujPolje(f);
+        return f;
+    }
+
+    private void stilizujPolje(JTextField f) {
+        f.setAlignmentX(Component.LEFT_ALIGNMENT);
+        f.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        f.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        f.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER),
+                new EmptyBorder(6, 10, 6, 10)));
     }
 
     public void loginAddActionListener(java.awt.event.ActionListener actionListener) {

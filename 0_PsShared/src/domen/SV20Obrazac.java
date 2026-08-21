@@ -166,7 +166,7 @@ public class SV20Obrazac implements ApstraktniDomenskiObjekat {
     public String vratiVrednostiZaUbacivanje() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return "'" + sdf.format(datumUnosa) + "', " + skolskaGodina + ", " + semestar + ", '"
-                + status.name() + "', '" + putanjaDoFajla + "', " + ocrIzvrseno + ", "
+                + status.name() + "', " + (putanjaDoFajla != null ? "'" + putanjaDoFajla + "'" : "NULL") + ", " + ocrIzvrseno + ", "
                 + brojUspesnihStavki + ", " + brojNeuspesnihStavki + ", "
                 + idZaposlenog.getIdZaposlenog() + ", '" + indeks.getIndeks() + "'";
     }
@@ -205,7 +205,7 @@ public class SV20Obrazac implements ApstraktniDomenskiObjekat {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return "datumUnosa = '" + sdf.format(datumUnosa) + "', skolskaGodina = " + skolskaGodina
                 + ", semestar = " + semestar + ", status = '" + status.name() + "', "
-                + "putanjaFajla = '" + putanjaDoFajla + "', ocrIzvrseno = " + ocrIzvrseno
+                + "putanjaFajla = " + (putanjaDoFajla != null ? "'" + putanjaDoFajla + "'" : "NULL") + ", ocrIzvrseno = " + ocrIzvrseno
                 + ", brojUspesnihStavki = " + brojUspesnihStavki + ", brojNeuspesnihStavki = " + brojNeuspesnihStavki
                 + ", idZaposlenog = " + idZaposlenog.getIdZaposlenog() + ", indeks = '" + indeks.getIndeks() + "'";
     }

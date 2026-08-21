@@ -176,6 +176,10 @@ public class SV20ObrazacForma extends JPanel {
         crudPanel.add(btnSacuvaj);
         crudPanel.add(btnObrisi);
         crudPanel.add(btnOcisti);
+        // Kontekstualno: "Dodaj" kad se pravi nov zapis, "Sačuvaj/Obriši" kad je red
+        // već selektovan iz tabele — sprečava da sva četiri dugmeta stoje pomešano
+        // bez jasnog značenja koje se od njih zapravo primenjuje na trenutno stanje.
+        prikaziRezimUnosa(true);
 
         JPanel formWithButtons = new JPanel(new BorderLayout(0, 4));
         formWithButtons.setBackground(Color.WHITE);
@@ -285,7 +289,6 @@ public class SV20ObrazacForma extends JPanel {
         JPanel slikaPanel = new JPanel(new BorderLayout(0, 6));
         slikaPanel.setBackground(Color.WHITE);
         slikaPanel.setBorder(naslovljenaIvica("Skenirani obrazac"));
-        slikaPanel.setPreferredSize(new Dimension(430, 10));
 
         lblSlikaPregled = new JLabel("", SwingConstants.CENTER);
         lblSlikaPregled.setForeground(TEXT_MUTED);
@@ -320,10 +323,11 @@ public class SV20ObrazacForma extends JPanel {
         stavkeScroll.getVerticalScrollBar().setUnitIncrement(16);
         poljaPanel.add(stavkeScroll, BorderLayout.CENTER);
 
-        JPanel split = new JPanel(new BorderLayout(12, 0));
-        split.setBackground(Color.WHITE);
-        split.add(slikaPanel, BorderLayout.WEST);
-        split.add(poljaPanel, BorderLayout.CENTER);
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, slikaPanel, poljaPanel);
+        split.setResizeWeight(0.5);
+        split.setDividerLocation(0.5);
+        split.setBorder(null);
+        split.setContinuousLayout(true);
 
         // ── Dugmad ───────────────────────────────────────────────────────────
         btnNazad = ghostDugme("‹ Nazad na obrazac");
@@ -423,7 +427,14 @@ public class SV20ObrazacForma extends JPanel {
             meta.setText("Nema slike za prikaz");
             return;
         }
+        // Iskoristi stvarnu širinu okvira u kom slika sedi (u OCR pregledu je to ~50% ekrana,
+        // u kartici "Lista" je to fiksni pregled-okvir) — bez ovoga slika u pregledu ostaje
+        // mala čak i kad joj je split dao mnogo više prostora.
         int maxSirina = 390;
+        Container roditelj = meta.getParent();
+        if (roditelj != null && roditelj.getWidth() > 80) {
+            maxSirina = roditelj.getWidth() - 16;
+        }
         int w = slika.getWidth();
         int h = slika.getHeight();
         double razmera = w > maxSirina ? maxSirina / (double) w : 1.0;
@@ -441,6 +452,14 @@ public class SV20ObrazacForma extends JPanel {
     public JLabel getLblSazetakStavki() { return lblSazetakStavki; }
     public JLabel getLblSazetakPregled() { return lblSazetakPregled; }
     public JButton getBtnPregledajStavke() { return btnPregledajStavke; }
+
+    /** true = ništa nije selektovano (prikaži "Dodaj obrazac"); false = red je selektovan
+     *  (prikaži "Sačuvaj izmene" + "Obriši"). "Očisti formu" je uvek vidljivo. */
+    public void prikaziRezimUnosa(boolean noviZapis) {
+        btnDodaj.setVisible(noviZapis);
+        btnSacuvaj.setVisible(!noviZapis);
+        btnObrisi.setVisible(!noviZapis);
+    }
     public JButton getBtnPrethodnaStranaLista() { return btnPrethodnaStranaLista; }
     public JButton getBtnSledecaStranaLista() { return btnSledecaStranaLista; }
     public JButton getBtnPrethodnaStranaPregled() { return btnPrethodnaStranaPregled; }
@@ -505,13 +524,23 @@ public class SV20ObrazacForma extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tblObrasci.setModel(tableModelObrasci);
-        tblObrasci.setRowHeight(28);
-        tblObrasci.setGridColor(new Color(228, 232, 238));
+        tblObrasci.setRowHeight(24);
+        tblObrasci.setIntercellSpacing(new Dimension(0, 0));
+        tblObrasci.setShowVerticalLines(false);
+        tblObrasci.setGridColor(new Color(232, 236, 241));
         tblObrasci.getTableHeader().setBackground(new Color(242, 244, 247));
-        tblObrasci.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        tblObrasci.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 11));
+        tblObrasci.setFont(new Font("SansSerif", Font.PLAIN, 12));
         tblObrasci.setSelectionBackground(new Color(214, 224, 235));
         tblObrasci.getColumnModel().getColumn(4).setCellRenderer(new StatusBadgeRenderer());
         tblObrasci.getColumnModel().getColumn(7).setCellRenderer(new OcrBadgeRenderer());
+
+        // Eksplicitne širine — bez ovoga sve kolone dobijaju istu širinu pa "1" (semestar)
+        // i "Zaposleni" zauzimaju isti prostor, što ostavlja ogromne prazne razmake.
+        int[] sirine = {46, 90, 70, 70, 130, 130, 150, 60, 0};
+        for (int i = 0; i < sirine.length; i++) {
+            tblObrasci.getColumnModel().getColumn(i).setPreferredWidth(sirine[i]);
+        }
         tblObrasci.getColumnModel().getColumn(8).setMinWidth(0);
         tblObrasci.getColumnModel().getColumn(8).setMaxWidth(0);
         tblObrasci.getColumnModel().getColumn(8).setWidth(0);

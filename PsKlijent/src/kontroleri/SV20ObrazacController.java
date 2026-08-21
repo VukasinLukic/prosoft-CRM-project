@@ -218,9 +218,9 @@ public class SV20ObrazacController {
             int skolskaGodina = (int) forma.getSpnSkolskaGodina().getValue();
             int semestar = (int) forma.getSpnSemestar().getValue();
             Status status = (Status) forma.getCmbStatus().getSelectedItem();
-            String putanjaFajla = normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim());
+            String putanjaFajla = naPrazno(normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim()));
 
-            if (!validirajPodatke(student, zaposleni, putanjaFajla)) return;
+            if (!validirajPodatke(student, zaposleni)) return;
 
             SV20Obrazac o = new SV20Obrazac();
             o.setDatumUnosa(new Date());
@@ -260,9 +260,9 @@ public class SV20ObrazacController {
             int skolskaGodina = (int) forma.getSpnSkolskaGodina().getValue();
             int semestar = (int) forma.getSpnSemestar().getValue();
             Status status = (Status) forma.getCmbStatus().getSelectedItem();
-            String putanjaFajla = normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim());
+            String putanjaFajla = naPrazno(normalizujPutanju(forma.getTxtPutanjaFajla().getText().trim()));
 
-            if (!validirajPodatke(student, zaposleni, putanjaFajla)) return;
+            if (!validirajPodatke(student, zaposleni)) return;
 
             SV20Obrazac o = forma.getSelektovaniObrazac();
             o.setSkolskaGodina(skolskaGodina);
@@ -730,6 +730,7 @@ public class SV20ObrazacController {
         forma.getTxtPutanjaFajla().setText("");
         forma.setSelektovaniObrazac(null);
         forma.getTblObrasci().clearSelection();
+        forma.prikaziRezimUnosa(true);
         forma.getLblSlikaLista().setIcon(null);
         forma.getLblSlikaLista().setText("Fajl nije izabran");
         forma.getLblStranaLista().setText("—");
@@ -777,6 +778,7 @@ public class SV20ObrazacController {
             }
 
             forma.setSelektovaniObrazac(o);
+            forma.prikaziRezimUnosa(false);
 
             if (o.isOcrIzvrseno()) {
                 forma.getLblSazetakStavki().setText("Obrazac #" + o.getIdObrazac() + " — OCR obrađen. Klikni da pregledaš i koriguješ stavke.");
@@ -799,17 +801,18 @@ public class SV20ObrazacController {
         return null;
     }
 
-    private boolean validirajPodatke(Student student, ZaposleniFakulteta zaposleni, String putanjaFajla) {
+    /** Prazan string tretiramo kao "nema skena" (SQL NULL), ne kao stvarnu vrednost. */
+    private static String naPrazno(String s) {
+        return (s == null || s.isEmpty()) ? null : s;
+    }
+
+    private boolean validirajPodatke(Student student, ZaposleniFakulteta zaposleni) {
         if (student == null) {
             JOptionPane.showMessageDialog(forma, "Student je obavezan!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
             return false;
         }
         if (zaposleni == null) {
             JOptionPane.showMessageDialog(forma, "Zaposleni je obavezan!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-        if (putanjaFajla.isEmpty()) {
-            JOptionPane.showMessageDialog(forma, "Putanja do fajla je obavezna!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
             return false;
         }
         return true;
