@@ -121,11 +121,7 @@ public class StudijskiProgramForma extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tblProgrami.setModel(tableModel);
-        tblProgrami.setRowHeight(24);
-        tblProgrami.setGridColor(new Color(220, 230, 245));
-        tblProgrami.getTableHeader().setBackground(new Color(232, 240, 254));
-        tblProgrami.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
-        tblProgrami.setSelectionBackground(new Color(187, 222, 251));
+        FormeUtil.stilizujTabelu(tblProgrami, 50, 300, 120, 200);
     }
 
     public JTable getTblProgrami() { return tblProgrami; }

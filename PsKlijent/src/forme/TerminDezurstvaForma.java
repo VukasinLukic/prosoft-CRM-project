@@ -111,11 +111,7 @@ public class TerminDezurstvaForma extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tblTermini.setModel(tableModel);
-        tblTermini.setRowHeight(24);
-        tblTermini.setGridColor(new Color(220, 230, 245));
-        tblTermini.getTableHeader().setBackground(new Color(232, 240, 254));
-        tblTermini.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
-        tblTermini.setSelectionBackground(new Color(187, 222, 251));
+        FormeUtil.stilizujTabelu(tblTermini, 50, 300, 200);
     }
 
     public JTable getTblTermini() { return tblTermini; }

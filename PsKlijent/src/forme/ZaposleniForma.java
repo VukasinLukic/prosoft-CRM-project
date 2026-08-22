@@ -136,11 +136,7 @@ public class ZaposleniForma extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tblZaposleni.setModel(tableModel);
-        tblZaposleni.setRowHeight(24);
-        tblZaposleni.setGridColor(new Color(220, 230, 245));
-        tblZaposleni.getTableHeader().setBackground(new Color(232, 240, 254));
-        tblZaposleni.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
-        tblZaposleni.setSelectionBackground(new Color(187, 222, 251));
+        FormeUtil.stilizujTabelu(tblZaposleni, 50, 150, 150, 160, 220);
     }
 
     public JTable getTblZaposleni() { return tblZaposleni; }

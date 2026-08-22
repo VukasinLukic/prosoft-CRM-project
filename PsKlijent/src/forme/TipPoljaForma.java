@@ -136,11 +136,7 @@ public class TipPoljaForma extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tblTipoviPolja.setModel(tableModel);
-        tblTipoviPolja.setRowHeight(24);
-        tblTipoviPolja.setGridColor(new Color(220, 230, 245));
-        tblTipoviPolja.getTableHeader().setBackground(new Color(232, 240, 254));
-        tblTipoviPolja.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
-        tblTipoviPolja.setSelectionBackground(new Color(187, 222, 251));
+        FormeUtil.stilizujTabelu(tblTipoviPolja, 50, 260, 130, 80, 80, 70, 90);
     }
 
     public JTable getTblTipoviPolja() { return tblTipoviPolja; }

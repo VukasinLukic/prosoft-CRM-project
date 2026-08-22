@@ -151,11 +151,7 @@ public class StudentForma extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tblStudenti.setModel(tableModel);
-        tblStudenti.setRowHeight(24);
-        tblStudenti.setGridColor(new Color(220, 230, 245));
-        tblStudenti.getTableHeader().setBackground(new Color(232, 240, 254));
-        tblStudenti.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
-        tblStudenti.setSelectionBackground(new Color(187, 222, 251));
+        FormeUtil.stilizujTabelu(tblStudenti, 90, 140, 140, 140, 160, 220, 220);
     }
 
     public JTable getTblStudenti() { return tblStudenti; }

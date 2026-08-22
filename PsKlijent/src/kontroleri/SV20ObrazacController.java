@@ -38,6 +38,13 @@ public class SV20ObrazacController {
     // ručno rekonstruiše iz ćelija tabele i time izgubi ono što tabela ne prikazuje.
     private List<SV20Obrazac> ucitaniObrasci = new ArrayList<>();
     private List<ZaposleniFakulteta> sviZaposleni = new ArrayList<>();
+    private List<Student> sviStudenti = new ArrayList<>();
+
+    // Polja čiju vrednost već pouzdano znamo iz baze studenata — OCR ih NIKAD ne prepisuje
+    // (papir se ionako često loše čita baš za rukom pisano ime/JMBG, a mi to podatak već imamo
+    // tačno unet kad je student kreiran). Ostala polja i dalje popunjava isključivo OCR.
+    private static final java.util.Set<String> POLJA_IZ_BAZE_STUDENTA = new java.util.HashSet<>(java.util.Arrays.asList(
+            "ime_prezime_studenta", "jmbg", "broj_indeksa", "mesto_rodjenja", "prebivaliste_ulica"));
 
     // Stanje kartice "OCR pregled"
     private int stranaPregled = 1;
@@ -126,7 +133,9 @@ public class SV20ObrazacController {
     private void ucitajStudente() {
         try {
             List<Student> lista = Komunikacija.getInstanca().vratiSveStudente();
+            sviStudenti = lista;
             forma.getCmbStudent().removeAllItems();
+            forma.getCmbStudent().addItem(null); // "— Izaberite studenta —" placeholder (vidi renderer u formi)
             for (Student s : lista) { forma.getCmbStudent().addItem(s); }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(forma, "Greska pri ucitavanju studenata: " + ex.getMessage(),
@@ -179,7 +188,7 @@ public class SV20ObrazacController {
             o.getSkolskaGodina(),
             o.getSemestar(),
             o.getStatus(),
-            o.getIndeks() != null ? o.getIndeks().getIndeks() : "",
+            imeStudenta(o.getIndeks()),
             imeZaposlenog(o.getIdZaposlenog()),
             o.isOcrIzvrseno() ? "Da" : "Ne",
             o.getPutanjaDoFajla() != null ? o.getPutanjaDoFajla() : ""
@@ -193,6 +202,18 @@ public class SV20ObrazacController {
      * zaposlenih učitanoj pri pokretanju ekrana, umesto što se oslanjamo na nepotpun
      * objekat iz baze.
      */
+    /** Isto kao imeZaposlenog() — server vraća samo indeks (bez imena/prezimena),
+     *  pa se puno ime traži u listi svih studenata učitanoj pri otvaranju ekrana. */
+    private String imeStudenta(Student stub) {
+        if (stub == null || stub.getIndeks() == null) return "";
+        for (Student s : sviStudenti) {
+            if (stub.getIndeks().equals(s.getIndeks())) {
+                return stub.getIndeks() + " — " + s.getIme() + " " + s.getPrezime();
+            }
+        }
+        return stub.getIndeks();
+    }
+
     private String imeZaposlenog(ZaposleniFakulteta stub) {
         if (stub == null) return "";
         for (ZaposleniFakulteta z : sviZaposleni) {
@@ -359,34 +380,49 @@ public class SV20ObrazacController {
         obrazacUPregledu = obrazac;
         String putanja = normalizujPutanju(obrazac.getPutanjaDoFajla());
         String zaglavlje = zaglavljeObrasca(obrazac);
-
-        if (putanja == null || putanja.isEmpty()) {
-            stavkeUPregledu = new ArrayList<>();
-            stranaPregled = 1;
-            maxStranaPregled = 1;
-            forma.prikaziStanjeSlike(false);
-            forma.prikaziStavke(stavkeUPregledu, 1);
-            forma.getLblSazetakPregled().setText(zaglavlje + " — nema priložene slike.");
-            forma.prikaziKarticu(SV20ObrazacForma.KARTICA_PREGLED);
-            return;
-        }
+        boolean imaSken = putanja != null;
 
         forma.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 
         SwingWorker<Object[], Void> worker = new SwingWorker<Object[], Void>() {
             @Override protected Object[] doInBackground() throws Exception {
-                ocr.OcrPrikaz prikaz = ocr.OcrKlijent.preuzmiPrikaz(putanja);
+                ocr.OcrPrikaz prikaz = imaSken ? ocr.OcrKlijent.preuzmiPrikaz(putanja) : null;
 
                 StavkeObrasca kriterijum = new StavkeObrasca();
                 SV20Obrazac o = new SV20Obrazac();
                 o.setIdObrazac(obrazac.getIdObrazac());
                 kriterijum.setIdObrazac(o);
                 List<StavkeObrasca> stavke = Komunikacija.getInstanca().pretraziStavkeObrasca(kriterijum);
+                List<TipPolja> tipoviPolja = Komunikacija.getInstanca().vratiSveTipovePolja();
 
                 // Generički broker (bez JOIN-a) vraća idPolja kao "patrljak" (samo ID, bez
                 // naziva/strane/redosleda) — bez ovoga polja u pregledu nemaju labelu
                 // i sva ispadnu pod "Strana 0".
-                obogatiTipPoljaPodacima(stavke, Komunikacija.getInstanca().vratiSveTipovePolja());
+                obogatiTipPoljaPodacima(stavke, tipoviPolja);
+
+                // Obrazac treba da se može popuniti i BEZ OCR-a (npr. dok se ne skenira) —
+                // za svako TipPolja koje još nema sačuvanu stavku napravi praznu "virtuelnu"
+                // stavku (idStavke=0, još ne postoji u bazi) da polje bude vidljivo i editabilno.
+                // Za polja koja već pouzdano znamo iz baze studenta, virtuelna stavka se odmah
+                // popuni tom vrednošću.
+                java.util.Map<String, String> izStudenta = vrednostiIzStudenta(obrazac.getIndeks());
+                java.util.Set<Integer> postojeciIdPolja = new java.util.HashSet<>();
+                for (StavkeObrasca s : stavke) {
+                    if (s.getIdPolja() != null) postojeciIdPolja.add(s.getIdPolja().getIdPolja());
+                }
+                for (TipPolja tip : tipoviPolja) {
+                    if (postojeciIdPolja.contains(tip.getIdPolja())) continue;
+                    StavkeObrasca virtuelna = new StavkeObrasca();
+                    virtuelna.setIdStavke(0);
+                    virtuelna.setIdObrazac(obrazac);
+                    virtuelna.setIdPolja(tip);
+                    virtuelna.setOcrVrednost(null);
+                    virtuelna.setNivoPodudarnosti(0);
+                    virtuelna.setOcrUspesno(false);
+                    String nazivMalim = tip.getNazivPolja() != null ? tip.getNazivPolja().trim().toLowerCase() : "";
+                    virtuelna.setKorigovanaVrednost(izStudenta.get(nazivMalim));
+                    stavke.add(virtuelna);
+                }
 
                 stavke.sort(Comparator.comparingInt(
                         (StavkeObrasca s) -> s.getIdPolja() != null ? s.getIdPolja().getStranica() : 1)
@@ -405,17 +441,22 @@ public class SV20ObrazacController {
 
                     stavkeUPregledu = stavke;
                     stranaPregled = 1;
-                    maxStranaPregled = prikaz.getBrojStrana();
 
-                    forma.prikaziStanjeSlike(true);
-                    forma.postaviTekstDugmetaOcr(obrazac.isOcrIzvrseno());
-                    forma.prikaziSliku(prikaz.getSlika(), forma.getLblSlikaPregled());
-                    forma.getLblStranaPregled().setText("Strana 1 od " + maxStranaPregled);
-                    forma.getBtnPrethodnaStranaPregled().setEnabled(false);
-                    forma.getBtnSledecaStranaPregled().setEnabled(maxStranaPregled > 1);
+                    if (imaSken) {
+                        maxStranaPregled = prikaz.getBrojStrana();
+                        forma.prikaziStanjeSlike(true);
+                        forma.postaviTekstDugmetaOcr(obrazac.isOcrIzvrseno());
+                        forma.prikaziSliku(prikaz.getSlika(), forma.getLblSlikaPregled());
+                        forma.getLblStranaPregled().setText("Strana 1 od " + maxStranaPregled);
+                        forma.getBtnPrethodnaStranaPregled().setEnabled(false);
+                        forma.getBtnSledecaStranaPregled().setEnabled(maxStranaPregled > 1);
+                    } else {
+                        maxStranaPregled = 1;
+                        forma.prikaziStanjeSlike(false);
+                    }
 
                     forma.prikaziStavke(stavkeZaStranu(1), 1);
-                    forma.getLblSazetakPregled().setText(zaglavlje + (stavke.isEmpty() ? "" : " — " + sazetakStavki(stavke)));
+                    forma.getLblSazetakPregled().setText(zaglavlje + " — " + sazetakStavki(stavke));
                     forma.prikaziKarticu(SV20ObrazacForma.KARTICA_PREGLED);
 
                 } catch (Exception ex) {
@@ -430,9 +471,33 @@ public class SV20ObrazacController {
         worker.execute();
     }
 
+    /** Vrednosti koje već pouzdano znamo iz zapisa studenta u bazi, ključane po nazivPolja
+     *  (malim slovima) — koristi se i za popunjavanje "virtuelnih" polja i da OCR zna koja
+     *  polja da preskoči (vidi POLJA_IZ_BAZE_STUDENTA / pokreniOcr()). */
+    private java.util.Map<String, String> vrednostiIzStudenta(Student s) {
+        java.util.Map<String, String> m = new java.util.HashMap<>();
+        if (s == null) return m;
+        // "stub" iz SV20Obrazac (samo indeks) — dopuni punim podacima iz učitane liste studenata.
+        Student pun = s;
+        for (Student kandidat : sviStudenti) {
+            if (kandidat.getIndeks() != null && kandidat.getIndeks().equals(s.getIndeks())) {
+                pun = kandidat;
+                break;
+            }
+        }
+        String ime = pun.getIme() != null ? pun.getIme() : "";
+        String prezime = pun.getPrezime() != null ? pun.getPrezime() : "";
+        if (!ime.isEmpty() || !prezime.isEmpty()) m.put("ime_prezime_studenta", (ime + " " + prezime).trim());
+        if (pun.getJmbg() != null) m.put("jmbg", pun.getJmbg());
+        if (pun.getIndeks() != null) m.put("broj_indeksa", pun.getIndeks());
+        if (pun.getMestoRodjenja() != null) m.put("mesto_rodjenja", pun.getMestoRodjenja());
+        if (pun.getAdresaStanovanja() != null) m.put("prebivaliste_ulica", pun.getAdresaStanovanja());
+        return m;
+    }
+
     private String zaglavljeObrasca(SV20Obrazac o) {
-        String indeks = o.getIndeks() != null ? o.getIndeks().getIndeks() : "";
-        return "Obrazac #" + o.getIdObrazac() + (indeks.isEmpty() ? "" : " — " + indeks);
+        String student = imeStudenta(o.getIndeks());
+        return "Obrazac #" + o.getIdObrazac() + (student.isEmpty() ? "" : " — " + student);
     }
 
     /** Bira fajl i ODMAH ga trajno vezuje za obrazac (bez posebnog "Sačuvaj" koraka za sken). */
@@ -534,7 +599,8 @@ public class SV20ObrazacController {
     private void sinhronizujTrenutnuStranicu() {
         Map<Integer, JTextField> polja = forma.getPoljaZaKorekciju();
         for (StavkeObrasca s : stavkeUPregledu) {
-            JTextField txt = polja.get(s.getIdStavke());
+            if (s.getIdPolja() == null) continue;
+            JTextField txt = polja.get(s.getIdPolja().getIdPolja());
             if (txt != null) {
                 String nova = txt.getText().trim();
                 s.setKorigovanaVrednost(nova.isEmpty() ? null : nova);
@@ -556,23 +622,57 @@ public class SV20ObrazacController {
 
     private void sacuvajStavke() {
         sinhronizujTrenutnuStranicu();
-        int sacuvano = 0, greske = 0;
-        for (StavkeObrasca s : stavkeUPregledu) {
-            try {
-                Komunikacija.getInstanca().promeniStavkuObrasca(s);
-                sacuvano++;
-            } catch (Exception ex) {
-                greske++;
+        // Obrazac sad može imati do ~37 polja odjednom (i ona koja korisnik popunjava ručno
+        // bez OCR-a) — čuvanje ide na pozadinskoj niti da klik ne zamrzne prozor na trenutak.
+        final List<StavkeObrasca> zaCuvanje = new ArrayList<>(stavkeUPregledu);
+        forma.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+
+        SwingWorker<int[], Void> worker = new SwingWorker<int[], Void>() {
+            @Override protected int[] doInBackground() {
+                int sacuvano = 0, greske = 0;
+                for (StavkeObrasca s : zaCuvanje) {
+                    // Polje koje korisnik nikad nije dotakao (virtuelno, bez vrednosti) ne treba
+                    // da napravi prazan red u bazi — sačekaj da stvarno ima šta da se sačuva.
+                    boolean prazno = (s.getKorigovanaVrednost() == null || s.getKorigovanaVrednost().isEmpty())
+                            && s.getOcrVrednost() == null;
+                    if (s.getIdStavke() == 0 && prazno) continue;
+                    try {
+                        if (s.getIdStavke() == 0) {
+                            Komunikacija.getInstanca().kreirajStavkuObrasca(s);
+                        } else {
+                            Komunikacija.getInstanca().promeniStavkuObrasca(s);
+                        }
+                        sacuvano++;
+                    } catch (Exception ex) {
+                        greske++;
+                    }
+                }
+                return new int[]{sacuvano, greske};
             }
-        }
-        if (greske == 0) {
-            JOptionPane.showMessageDialog(forma, "Sačuvano " + sacuvano + " stavki.",
-                    "Uspeh", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(forma,
-                    "Sačuvano " + sacuvano + " stavki, " + greske + " nije uspelo.",
-                    "Delimičan uspeh", JOptionPane.WARNING_MESSAGE);
-        }
+
+            @Override protected void done() {
+                forma.setCursor(java.awt.Cursor.getDefaultCursor());
+                try {
+                    int[] rezultat = get();
+                    int sacuvano = rezultat[0], greske = rezultat[1];
+                    if (greske == 0) {
+                        JOptionPane.showMessageDialog(forma, "Sačuvano " + sacuvano + " stavki.",
+                                "Uspeh", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(forma,
+                                "Sačuvano " + sacuvano + " stavki, " + greske + " nije uspelo.",
+                                "Delimičan uspeh", JOptionPane.WARNING_MESSAGE);
+                    }
+                    // Ponovo učitaj sa servera da novosačuvane stavke dobiju svoj pravi idStavke
+                    // (generički broker ga ne vraća nazad posle INSERT-a).
+                    otvoriOcrPregled(obrazacUPregledu);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(forma, "Greška pri čuvanju stavki: " + ex.getMessage(),
+                            "Greška", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 
     // ── Pokretanje OCR analize ───────────────────────────────────────────────
@@ -649,6 +749,13 @@ public class SV20ObrazacController {
                         }
                     }
                     if (tip == null) continue;
+                    // Ova polja već pouzdano znamo iz baze studenta — OCR ih ne prepisuje
+                    // (rukom pisano ime/JMBG na papiru je OCR-u teže da pročita tačno nego
+                    // što je taj podatak već ispravno unet u bazu).
+                    if (tip.getNazivPolja() != null
+                            && POLJA_IZ_BAZE_STUDENTA.contains(tip.getNazivPolja().trim().toLowerCase())) {
+                        continue;
+                    }
 
                     try {
                         StavkeObrasca postojeca = postojecePoPolju.get(tip.getIdPolja());
@@ -736,7 +843,7 @@ public class SV20ObrazacController {
             String indeksStudenta = o.getIndeks() != null ? o.getIndeks().getIndeks() : null;
             for (int i = 0; i < forma.getCmbStudent().getItemCount(); i++) {
                 Student s = forma.getCmbStudent().getItemAt(i);
-                if (s.getIndeks() != null && s.getIndeks().equals(indeksStudenta)) {
+                if (s != null && s.getIndeks() != null && s.getIndeks().equals(indeksStudenta)) {
                     forma.getCmbStudent().setSelectedIndex(i);
                     o.setIndeks(s); // puni objekat iz combo-a (server vraca samo indeks bez imena)
                     break;

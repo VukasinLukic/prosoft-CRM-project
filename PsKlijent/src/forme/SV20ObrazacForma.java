@@ -91,6 +91,16 @@ public class SV20ObrazacForma extends JPanel {
 
     private JPanel izgradiKarticuListe() {
         cmbStudent = new JComboBox();
+        cmbStudent.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list,
+                        value == null ? "— Izaberite studenta —" : value, index, isSelected, cellHasFocus);
+                if (value == null) { c.setForeground(TEXT_MUTED); }
+                return c;
+            }
+        });
         cmbStatus = new JComboBox();
         cmbKriterijum = new JComboBox(new String[]{"Indeks studenta", "Zaposleni", "Status"});
         spnSkolskaGodina = new JSpinner(new SpinnerNumberModel(
@@ -380,7 +390,10 @@ public class SV20ObrazacForma extends JPanel {
         red.add(txt, BorderLayout.CENTER);
         red.add(lblBadge, BorderLayout.EAST);
 
-        poljaZaKorekciju.put(s.getIdStavke(), txt);
+        // Ključ je ID tipa polja, ne ID stavke — polja koja korisnik tek popunjava ručno
+        // (bez OCR-a) još nemaju sačuvanu stavku u bazi (idStavke=0), pa idStavke ne bi bio
+        // jedinstven ključ; ID tipa polja postoji čak i za polja koja se tek prvi put unose.
+        poljaZaKorekciju.put(s.getIdPolja().getIdPolja(), txt);
         return red;
     }
 
@@ -498,23 +511,11 @@ public class SV20ObrazacForma extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tblObrasci.setModel(tableModelObrasci);
-        tblObrasci.setRowHeight(24);
-        tblObrasci.setIntercellSpacing(new Dimension(0, 0));
-        tblObrasci.setShowVerticalLines(false);
-        tblObrasci.setGridColor(new Color(232, 236, 241));
-        tblObrasci.getTableHeader().setBackground(new Color(242, 244, 247));
-        tblObrasci.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 11));
-        tblObrasci.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        tblObrasci.setSelectionBackground(new Color(214, 224, 235));
+        // Bojene značke za Status/OCR MORAJU biti postavljene PRE stilizujTabelu poziva —
+        // taj helper ne pregazi kolonu koja već ima svoj renderer.
         tblObrasci.getColumnModel().getColumn(4).setCellRenderer(new StatusBadgeRenderer());
         tblObrasci.getColumnModel().getColumn(7).setCellRenderer(new OcrBadgeRenderer());
-
-        // Eksplicitne širine — bez ovoga sve kolone dobijaju istu širinu pa "1" (semestar)
-        // i "Zaposleni" zauzimaju isti prostor, što ostavlja ogromne prazne razmake.
-        int[] sirine = {46, 90, 70, 70, 130, 130, 150, 60, 0};
-        for (int i = 0; i < sirine.length; i++) {
-            tblObrasci.getColumnModel().getColumn(i).setPreferredWidth(sirine[i]);
-        }
+        FormeUtil.stilizujTabelu(tblObrasci, 46, 90, 70, 70, 130, 210, 150, 60, 0);
         tblObrasci.getColumnModel().getColumn(8).setMinWidth(0);
         tblObrasci.getColumnModel().getColumn(8).setMaxWidth(0);
         tblObrasci.getColumnModel().getColumn(8).setWidth(0);
